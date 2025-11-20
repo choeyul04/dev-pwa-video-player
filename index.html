@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AD Wright</title>
+    <!-- materialize icons, css & js -->
+    <link type="text/css" href="css/materialize.min.css" rel="stylesheet" />
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+    <link rel="manifest" href="manifest.json" />
+    <!-- ios support -->
+    <meta name="apple-mobile-web-app-status-bar" content="#b388ff" />
+    <meta name="theme-color" content="#b388ff" />
+    <style>
+      body {
+        margin: 4rem;
+      }
+      #status {
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body class="grey darken-4">
+    <div class="container center grey-text text-lighten-4">
+      <div class="preloader-wrapper big active">
+        <div class="spinner-layer spinner-blue-only">
+          <div class="circle-clipper left">
+            <div class="circle"></div>
+          </div>
+          <div class="gap-patch">
+            <div class="circle"></div>
+          </div>
+          <div class="circle-clipper right">
+            <div class="circle"></div>
+          </div>
+        </div>
+      </div>
+      <div id="status">Installing Service Worker...</div>
+    </div>
+    <script>
+      'use strict';
+
+      var elStatus = document.getElementById('status');
+
+      // Ensure unsupported browsers don't load invalid JS (e.g. ES6, Promises), compile successfully, and show errors
+      if (!(navigator.serviceWorker && window.fetch && window.ReadableStream)) {
+        status(
+          'Service Worker, Fetch, or ReadableStream API is not supported in this browser.<p>This demo cannot function without them.',
+        );
+      } else {
+        var script = document.createElement('script');
+        script.src = 'supported-browser-install.js';
+        script.async = false;
+        document.body.append(script);
+      }
+
+      function status(text) {
+        elStatus.innerHTML = text;
+      }
+    </script>
+  </body>
+</html>
