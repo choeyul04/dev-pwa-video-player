@@ -42,6 +42,8 @@
     <script src="js/jstree.min.js"></script>
     <script src="js/axios.min.js"></script>
     <script src="js/dexie.min.js"></script>
+    <script src="js/qrcode.min.js"></script>
+
   </head>
   <body class="grey darken-4">
     <!-- top nav -->
@@ -108,11 +110,89 @@
     </div>
 
     <!-- Modal player -->
+    <!-- Modal player -->
     <div id="modal-player" class="mobile-hidden">
-      <!-- <div class="modal-content"> -->
-      <video class="video-js vjs-default-skin"></video>
-      <!-- </div> -->
+      <div class="ad-player-layout">
+        <!-- 왼쪽: 비디오 영역 -->
+        <div class="ad-player-left">
+          <!-- 원래 video 태그 그대로 사용 -->
+          <video class="video-js vjs-default-skin"></video>
+        </div>
+
+        <!-- 오른쪽: 팝업 정보 배너 예시값들 -->
+        <aside class="ad-player-banner">
+          <div class="ad-banner-inner">
+
+
+            <!-- EN_POPUP_NAME -->
+            <div class="ad-banner-subtitle">
+              EXCLUSIVE SNEAKER DROP
+            </div>
+
+            <!-- POPUP_NAME -->
+            <h2 class="ad-banner-title">
+              스니커즈 리미티드 드롭
+            </h2>
+
+            <!-- PROMOTION -->
+            <p class="ad-banner-desc">
+              한국 최초 공개되는 리미티드 에디션 스니커즈. 
+              선착순 구매 기회를 놓치지 마세요!
+            </p>
+
+            <!-- LOCATION / PERIOD / OPEN_TIME -->
+            <div class="ad-banner-meta">
+              <div class="ad-banner-meta-row">
+                <span class="material-icons ad-banner-meta-icon">place</span>
+                <div>
+                  <div class="ad-banner-meta-label">위치</div>
+                  <div class="ad-banner-meta-value">
+                    성수동 서울숲2길 44-13
+                  </div>
+                </div>
+              </div>
+
+              <div class="ad-banner-meta-row">
+                <span class="material-icons ad-banner-meta-icon">event</span>
+                <div>
+                  <div class="ad-banner-meta-label">기간</div>
+                  <div class="ad-banner-meta-value">
+                    2025.12.01 - 2025.12.10
+                  </div>
+                </div>
+              </div>
+
+              <div class="ad-banner-meta-row">
+                <span class="material-icons ad-banner-meta-icon">schedule</span>
+                <div>
+                  <div class="ad-banner-meta-label">오픈 시간</div>
+                  <div class="ad-banner-meta-value">
+                    월요일 11:00 ~ 21:00<br>
+                    수요일 15:00 ~ 21:00<br>
+                    금요일 11:00 ~ 14:00<br>
+
+                    
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- QR -->
+            <div class="ad-banner-qr">
+              <div class="ad-banner-qr-box" id="ad-banner-qr-box">
+                <!-- QRCode.js가 여기 안에 <img> 또는 <canvas>를 생성 -->
+              </div>
+              <p class="ad-banner-qr-text">
+                자세한 정보는<br />
+                QR 코드를 스캔하세요
+              </p>
+            </div>
+            
+          </div>
+        </aside>
+      </div>
     </div>
+
     <div class="footer-fixed">
       <footer class="red lighten-2">
         <nav class="z-depth-0">
@@ -144,5 +224,10 @@
     <script src="js/ws.js"></script>
     <script src="js/player.js"></script>
     <script src="js/ui.js"></script>
+    
+
+    <script src="js/banner.js"></script>
+
+
   </body>
 </html>
