@@ -1,5 +1,5 @@
 const BASE_URL =
-  'https://gb9fb258fe17506-apexdb.adb.ap-seoul-1.oraclecloudapps.com/ords/ad/v1/ad/';
+  'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/ad_dev/v1/ad/';
 const DEVICE_URL = 'devices';
 const POSITION_URL = 'devices/position';
 const POSITION_LOCKED_URL = 'devices/position/locked';
