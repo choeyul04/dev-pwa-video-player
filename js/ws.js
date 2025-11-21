@@ -1,4 +1,4 @@
-const host = 'cs.raiid.ai';
+const host = 'croms.raiid.ai';
 const port = 9001;
 let mqttRetryInterval = 1000;
 
