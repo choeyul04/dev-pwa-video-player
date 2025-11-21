@@ -53,7 +53,7 @@
   // 페이지 로드될 때: QR 만들고 배너 폰트 맞추기
   window.addEventListener('load', function () {
     const popupUrl =
-      'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?session=40894845531';
+      'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?aid=4411F0BD0B954F65E063975F000AA5E3';
 
     setBannerQr(popupUrl);
     fitAdBanner();
