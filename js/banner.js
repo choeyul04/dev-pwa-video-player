@@ -69,3 +69,75 @@
     ro.observe(mp);
   }
 })();
+
+
+function updateBanner(fileId) {
+  // 요소 찾기 (각 class는 하나씩만 존재한다고 가정)
+  const $title = document.querySelector('#banner-title');
+  const $subtitle = document.querySelector('#banner-subtitle');
+  const $promotion = document.querySelector('#banner-promotion');
+  const $location = document.querySelector('#banner-location');
+  const $duration = document.querySelector('#banner-duration');
+  const $opentime = document.querySelector('#banner-opentime');
+
+  const file = getBannerById(fileId);
+
+  if ($title) {
+    $title.textContent = file.popup_name || '';
+  }
+
+  if ($subtitle) {
+    $subtitle.textContent = file.en_popup_name || '';
+  }
+
+  if ($promotion) {
+    $promotion.textContent = file.promotion || '';
+  }
+
+  if ($location) {
+    $location.textContent = file.popup_location || '';
+  }
+
+  if ($duration) {
+    $duration.textContent = file.open_from_date + ' ~ ' + file.open_to_date || '';
+  }
+
+  if ($opentime) {
+    $opentime.textContent = file.open_tm_range || '';
+  }
+}
+
+function pushBannerFromFile(file) {
+  // 이미 존재하는지 검사
+  const exists = player.bannerInfo.some(banner => banner.id === file.FILE_ID);
+  if (exists) return;
+
+  player.bannerInfo.push({
+    id: file.FILE_ID,
+    is_popup: file.IS_POPUP,
+    popup_name: file.POPUP_NAME,
+    en_popup_name: file.EN_POPUP_NAME,
+    popup_location: file.POPUP_LOCATION,
+    open_tm_range: file.OPEN_TM_RANGE,
+    promotion: file.PROMOTION,
+    open_from_date: formatDotDate(file.OPEN_FROM_DATE),
+    open_to_date: formatDotDate(file.OPEN_TO_DATE),
+  });
+}
+
+function getBannerById(id) {
+  if (!player.bannerInfo || !player.bannerInfo.length) return null;
+
+  const numId = Number(id);
+  return player.bannerInfo.find(banner => Number(banner.id) === numId) || null;
+}
+
+
+function formatDotDate(dateStr) {
+  if (!dateStr) return null;
+  const d = new Date(dateStr);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}.${m}.${day}`;
+}

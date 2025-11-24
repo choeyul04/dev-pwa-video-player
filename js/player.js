@@ -339,7 +339,23 @@ player.on('play', async () => {
   if (date < player.runon || date > player.runoff || player.isEnd) {
     player.pause();
   }
+
+  const playlist = player.playlist();
+  const currentIndex = player.playlist.currentIndex();
+  const currentItem = playlist[currentIndex];
+
+  updateBanner(currentItem.report.FILE_ID);
 });
+
+// player.on('playlistitem', function (event, video, playlistIndex) {
+//   const currentIndex = player.playlist.currentIndex();
+//   const currentItem = player.playlist[currentIndex];
+
+//   console.log("currentItem",currentItem);
+
+//   console.log('playlist changed, index:', playlistIndex);
+//   updateBanner(playlistIndex);
+// });
 
 player.on('seeking', () => {
   const playlist = player.playlist();
@@ -399,6 +415,10 @@ player.on('ended', async function () {
     await gotoPlayableVideo(playlist, currentIndex);
   }
   addReport(currentItem);
+  
+  // 배너도 변경
+  const nextItem = playlist[nextIndex];
+  updateBanner(nextItem.report.FILE_ID);
 });
 
 /**
