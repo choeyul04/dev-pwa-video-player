@@ -339,6 +339,13 @@ player.on('play', async () => {
   if (date < player.runon || date > player.runoff || player.isEnd) {
     player.pause();
   }
+
+  // 배너 변경
+  const playlist = player.playlist();
+  const currentIndex = player.playlist.currentIndex();
+  const currentItem = playlist[currentIndex];
+
+  updateBanner(currentItem.report.FILE_ID);
 });
 
 player.on('seeking', () => {
@@ -399,6 +406,10 @@ player.on('ended', async function () {
     await gotoPlayableVideo(playlist, currentIndex);
   }
   addReport(currentItem);
+  
+  // 배너도 변경
+  // const nextItem = playlist[nextIndex];
+  // updateBanner(nextItem.report.FILE_ID);
 });
 
 /**

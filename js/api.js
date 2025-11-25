@@ -11,6 +11,7 @@ const CPADS_URL = 'cpads';
 const REPORT_URL = 'report';
 const WEBSOCKET_URL = 'websocket';
 const DATE_URL = 'date';
+const BANNER_URL = 'banner';
 
 const HS_API_KEY =
   '$2b$12$y4OZHQji3orEPdy2FtQJye:8f3bc93a-3b31-4323-b1a0-fd20584d9de4';
@@ -46,6 +47,11 @@ const initPlayerWithApiResponses = async (sudo = false) => {
     const device = await getDataFromUrl(DEVICE_URL);
     const ceads = await getDataFromUrl(CEADS_URL);
     const cpads = await getDataFromUrl(CPADS_URL);
+
+    // console.log("crad: ", crads);
+    // console.log("device: ", device);
+    // console.log("ceads: ", ceads);
+    // console.log("cpads: ", cpads);
 
     const usingUrls = [];
     usingUrls.push(...getFilteredVideoUrl(crads));
@@ -311,7 +317,11 @@ async function initPlayer(crads, device, sudo = false) {
     setDeviceConfig(deviceInfo);
     initPlayerUi(pos);
 
+    // 배너 정보 별도로 저장
+    player.bannerInfo = [];
+
     const playlists = cradsToPlaylists(crads);
+
     const currentTime = addHyphen(getFormattedDate(new Date()));
     removeCradJobs();
     await schedulePlaylists(playlists, currentTime);
@@ -543,6 +553,7 @@ function cradsToPlaylists(crads) {
     const filteredSlots = slots.filter(
       slot => slot.categoryId === item.CATEGORY_ID,
     );
+
     return {
       categoryId: item.CATEGORY_ID,
       categoryName: item.CATEGORY_NAME,
@@ -595,7 +606,7 @@ function formatDatePlayAtDawn(dateString) {
 
 /**
  * 일반재생목록 정보를 UI에 표시하기 위해 정제
- *
+ * 
  * @param { code: string, message:string, items: Object[] } radList 서버에서 api를 통해 전달받은 일반재생목록 정보
  * @return { Object[] } 정제된 Array
  */
@@ -619,6 +630,9 @@ function itemsToVideoList(radList) {
  * @return { Object } playlist src 형식 객체
  */
 const fileToPlaylistSrc = file => {
+  // 배너 정보 저장
+  pushBannerFromFile(file);
+
   return {
     sources: [{ src: file.VIDEO_URL, type: 'video/mp4' }],
     isHivestack: file.HIVESTACK_YN,
@@ -649,6 +663,7 @@ function formatSlotToPlaylist(originSlot) {
   };
   const lengths = originSlot.slots.map(slot => slot.files.length);
   for (let i = 0; i < lengths.reduce(lcm); i++) {
+
     originSlot.slots.forEach(slot => {
       const src = fileToPlaylistSrc(slot.files[i % slot.files.length]);
       src.slotId = slot.SLOT_ID;
