@@ -48,7 +48,7 @@ const initPlayerWithApiResponses = async (sudo = false) => {
     const ceads = await getDataFromUrl(CEADS_URL);
     const cpads = await getDataFromUrl(CPADS_URL);
 
-    console.log("crad: ", crads);
+    // console.log("crad: ", crads);
     // console.log("device: ", device);
     // console.log("ceads: ", ceads);
     // console.log("cpads: ", cpads);
@@ -321,9 +321,6 @@ async function initPlayer(crads, device, sudo = false) {
     player.bannerInfo = [];
 
     const playlists = cradsToPlaylists(crads);
-
-    console.log("playlists  ", playlists);
-    console.log("player.bannerInfo  ", player.bannerInfo);
 
     const currentTime = addHyphen(getFormattedDate(new Date()));
     removeCradJobs();
@@ -614,7 +611,6 @@ function formatDatePlayAtDawn(dateString) {
  * @return { Object[] } 정제된 Array
  */
 function itemsToVideoList(radList) {
-  console.log("radList: ", radList);
   return radList.items.map((v, index) => {
     return {
       index: index + 1,

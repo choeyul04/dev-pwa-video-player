@@ -80,6 +80,8 @@ function updateBanner(fileId) {
   const $duration = document.querySelector('#banner-duration');
   const $opentime = document.querySelector('#banner-opentime');
 
+  console.log("Banner is updated");
+
   const file = getBannerById(fileId);
 
   if ($title) {
@@ -103,7 +105,8 @@ function updateBanner(fileId) {
   }
 
   if ($opentime) {
-    $opentime.textContent = file.open_tm_range || '';
+    const opentimeHtml = (file.open_tm_range || '').replace(/\|/g, '<br>');
+    $opentime.innerHTML = opentimeHtml;
   }
 }
 
