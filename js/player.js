@@ -345,7 +345,7 @@ player.on('play', async () => {
   const currentIndex = player.playlist.currentIndex();
   const currentItem = playlist[currentIndex];
 
-  updateBanner(currentItem.report.FILE_ID);
+  await updateBanner(currentItem.report.FILE_ID);
 });
 
 player.on('seeking', () => {

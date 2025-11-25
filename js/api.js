@@ -340,7 +340,6 @@ async function fetchAndCacheBanners(crads) {
     crads.slots.map(originSlot => {
         originSlot.slots.forEach(slot => {
           slot.files.forEach(file => {
-            console.log("FILE", file);
             const bannerData = getBannerDataFromFile(file);
             banners.push(bannerData);
           })
