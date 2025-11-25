@@ -70,7 +70,7 @@
   // ------------------ 초기 로드/리사이즈 ------------------
   window.addEventListener('load', function () {
     const popupUrl =
-      'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?aid=4411F0BD0B954F65E063975F000AA5E3';
+      'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?aid=44008AC390844E7CE063975F000ACB59';
 
     setBannerQr(popupUrl);
 
