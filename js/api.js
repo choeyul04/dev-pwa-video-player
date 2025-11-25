@@ -351,7 +351,6 @@ async function fetchAndCacheBanners(crads) {
     ...new Map(banners.map(b => [b.id, b])).values()
   ];
 
-  player.bannerInfo = filteredBanners;
   cacheBanners(filteredBanners);
 
   console.log('Banners updated from network:', filteredBanners.length);

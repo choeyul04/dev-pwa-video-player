@@ -1,11 +1,6 @@
 const BANNER_CACHE_NAME = 'site-banner-v1';
 const POPUP_URL = 'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?';
 
-
-
-
-
-
 // ✅ QRCode.js 버전 – 크기 계산 따로 안 하고 항상 큰 해상도로 만들고,
 // CSS로 스케일만 조절 (지금 외부 API img 방식이랑 느낌 같게)
 function setBannerQr(url) {
@@ -33,27 +28,24 @@ function setBannerQr(url) {
 // 배너 정보 업데이트
 async function updateBanner(fileId) {
   // 요소 찾기 (각 class는 하나씩만 존재한다고 가정)
-  const $title = document.querySelector('#banner-title');
-  const $subtitle = document.querySelector('#banner-subtitle');
-  const $promotion = document.querySelector('#banner-promotion');
-  const $location = document.querySelector('#banner-location');
-  const $duration = document.querySelector('#banner-duration');
-  const $opentime = document.querySelector('#banner-opentime');
+  const $title = document.getElementById('banner-title');
+  const $subtitle = document.getElementById('banner-subtitle');
+  const $promotion = document.getElementById('banner-promotion');
+  const $location = document.getElementById('banner-location');
+  const $duration = document.getElementById('banner-duration');
+  const $opentime = document.getElementById('banner-opentime');
 
-  // 1. 우선 메모리(player.bannerInfo)에서 찾고
-  let file =
-    player.bannerInfo &&
-    player.bannerInfo.find(b => Number(b.id) === Number(fileId));
+  // Cache Storage에서 찾기
+  file = await getBannerFromCache(fileId);
 
-  // 2. 없으면 Cache Storage에서 찾기
-  if (!file) {
-    file = await getBannerFromCache(fileId);
-  }
-
+  // 배너 정보 못 찾으면 숨기기
   if (!file) {
     console.log('배너 정보 없음', fileId);
+    document.getElementById("banner").style.display = "none";
     return;
   }
+
+  document.getElementById("banner").style.display = "block";
 
   if ($title) {
     $title.textContent = file.popup_name || '';
