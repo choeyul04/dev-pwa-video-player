@@ -66,6 +66,9 @@ const initPlayerWithApiResponses = async (sudo = false) => {
       url => !deduplicatedUsingUrls.includes(url),
     );
 
+    // 배너 정보 캐싱
+    await fetchAndCacheBanners(crads);
+
     console.log('unusingUrls', unusingUrls);
 
     await deleteCachedVideo(unusingUrls);
@@ -317,9 +320,6 @@ async function initPlayer(crads, device, sudo = false) {
     initPlayerUi(pos);
 
     const playlists = cradsToPlaylists(crads);
-
-    // 배너 정보 별도로 저장
-    await fetchAndCacheBanners(crads);
 
     const currentTime = addHyphen(getFormattedDate(new Date()));
     removeCradJobs();

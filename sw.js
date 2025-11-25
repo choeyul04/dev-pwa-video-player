@@ -120,7 +120,6 @@ self.addEventListener('fetch', event => {
     (async () => {
       if (event.request.url.includes('oraclecloudapps.com/ords')) {
         try {
-          console.log("APEX_CACHE_NAME", event.request);
           return await fetchOthers(event.request, APEX_CACHE_NAME);
         } catch (error) {
           console.log('Error on fetching', event.request.url);
