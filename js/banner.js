@@ -2,29 +2,7 @@
 const BANNER_CACHE_NAME = 'site-banner-v1';
 const POPUP_URL = 'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?';
 
-// ✅ QRCode.js 버전 – 크기 계산 따로 안 하고 항상 큰 해상도로 만들고,
-// CSS로 스케일만 조절 (지금 외부 API img 방식이랑 느낌 같게)
-function setBannerQr(url) {
-    const box = document.getElementById('ad-banner-qr-box');
-    if (!box) return;
 
-    if (!window.QRCode) {
-        console.warn('QRCode library is not loaded.');
-        return;
-    }
-
-    // 이전 QR 제거
-    box.innerHTML = '';
-
-    new QRCode(box, {
-        text: url,
-        width: 600,
-        height: 600,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-    });
-}
 
 // 배너 정보 업데이트
 async function updateBanner(fileId) {
@@ -37,7 +15,7 @@ async function updateBanner(fileId) {
   const $opentime = document.getElementById('banner-opentime');
 
   // Cache Storage에서 찾기
-  file = await getBannerFromCache(fileId);
+  const file = await getBannerFromCache(fileId);
 
   // 배너 정보 못 찾으면 숨기기
   if (!file) {
@@ -75,6 +53,18 @@ async function updateBanner(fileId) {
 
   const url = POPUP_URL + "aid=" + file.info_id;
   setBannerQr(url);
+
+    // ✅ 색 적용 (DB 값 기반)
+  if (typeof setBannerTheme === 'function') {
+    const bg   = file.banner_bg_color  || '#7c4dff';   // 옵션: 기본값
+    const text = file.banner_text_color || '#ffffff';  // 옵션: 기본값
+    setBannerTheme(bg, text);
+  }
+
+  // 폰트 자동 축소
+  if (typeof fitAdBanner === 'function') {
+    fitAdBanner();
+  }
 }
 window.updateBanner = updateBanner;
 
@@ -90,6 +80,8 @@ function getBannerDataFromFile(file) {
     promotion: file.PROMOTION,
     open_from_date: formatDotDate(file.OPEN_FROM_DATE),
     open_to_date: formatDotDate(file.OPEN_TO_DATE),
+    banner_bg_color: file.BANNER_COLOR || null,
+    banner_text_color: file.TEXT_COLOR || null,
   };
 }
 
@@ -201,16 +193,6 @@ async function cacheBanners(banners) {
 
   // ------------------ 초기 로드/리사이즈 ------------------
   window.addEventListener('load', function () {
-    const popupUrl =
-      'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?aid=44008AC390844E7CE063975F000ACB59';
-
-    setBannerQr(popupUrl);
-
-    // ✅ 나중에 여기를 DB 값으로 바꾸면 됨
-    //   배경색: POPUP_BG_COLOR (예: #95FAFA)
-    //   글자색: POPUP_TEXT_COLOR (예: #222222)
-    setBannerTheme('#7c4dff', '#ffffff');
-
     fitAdBanner();
   });
 
