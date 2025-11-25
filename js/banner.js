@@ -1,3 +1,5 @@
+const BANNER_CACHE_NAME = 'site-banner-v1';
+
 (function () {
   function fitAdBanner() {
     const banner = document.querySelector('.ad-player-banner');
@@ -53,7 +55,7 @@
   // 페이지 로드될 때: QR 만들고 배너 폰트 맞추기
   window.addEventListener('load', function () {
     const popupUrl =
-      'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?aid=4411F0BD0B954F65E063975F000AA5E3';
+      'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?aid=44008AC390844E7CE063975F000ACB59';
 
     setBannerQr(popupUrl);
     fitAdBanner();
@@ -70,8 +72,8 @@
   }
 })();
 
-
-function updateBanner(fileId) {
+// 배너 정보 업데이트
+async function updateBanner(fileId) {
   // 요소 찾기 (각 class는 하나씩만 존재한다고 가정)
   const $title = document.querySelector('#banner-title');
   const $subtitle = document.querySelector('#banner-subtitle');
@@ -80,9 +82,20 @@ function updateBanner(fileId) {
   const $duration = document.querySelector('#banner-duration');
   const $opentime = document.querySelector('#banner-opentime');
 
-  console.log("Banner is updated");
+  // 1. 우선 메모리(player.bannerInfo)에서 찾고
+  let file =
+    player.bannerInfo &&
+    player.bannerInfo.find(b => Number(b.id) === Number(fileId));
 
-  const file = getBannerById(fileId);
+  // 2. 없으면 Cache Storage에서 찾기
+  if (!file) {
+    file = await getBannerFromCache(fileId);
+  }
+
+  if (!file) {
+    console.log('배너 정보 없음', fileId);
+    return;
+  }
 
   if ($title) {
     $title.textContent = file.popup_name || '';
@@ -110,12 +123,8 @@ function updateBanner(fileId) {
   }
 }
 
-function pushBannerFromFile(file) {
-  // 이미 존재하는지 검사
-  const exists = player.bannerInfo.some(banner => banner.id === file.FILE_ID);
-  if (exists) return;
-
-  player.bannerInfo.push({
+function getBannerDataFromFile(file) {
+  return {
     id: file.FILE_ID,
     is_popup: file.IS_POPUP,
     popup_name: file.POPUP_NAME,
@@ -125,14 +134,14 @@ function pushBannerFromFile(file) {
     promotion: file.PROMOTION,
     open_from_date: formatDotDate(file.OPEN_FROM_DATE),
     open_to_date: formatDotDate(file.OPEN_TO_DATE),
-  });
+  };
 }
 
-function getBannerById(id) {
-  if (!player.bannerInfo || !player.bannerInfo.length) return null;
-
-  const numId = Number(id);
-  return player.bannerInfo.find(banner => Number(banner.id) === numId) || null;
+async function getBannerFromCache(fileId) {
+  const key = `/banner/${fileId}`;
+  const response = await caches.match(key);
+  if (!response) return null;
+  return await response.json();
 }
 
 
@@ -143,4 +152,20 @@ function formatDotDate(dateStr) {
   const m = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}.${m}.${day}`;
+}
+
+async function cacheBanners(banners) {
+  const cache = await caches.open(BANNER_CACHE_NAME);
+
+  for (const banner of banners) {
+    if (!banner || banner.id == null) continue;
+
+    const key = `/banner/${banner.id}`; // 키로 쓸 “가짜 URL”
+
+    const response = new Response(JSON.stringify(banner), {
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    await cache.put(key, response);
+  }
 }
