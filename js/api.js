@@ -47,6 +47,11 @@ const initPlayerWithApiResponses = async (sudo = false) => {
     const ceads = await getDataFromUrl(CEADS_URL);
     const cpads = await getDataFromUrl(CPADS_URL);
 
+    // console.log("crad: ", crads);
+    // console.log("device: ", device);
+    // console.log("ceads: ", ceads);
+    // console.log("cpads: ", cpads);
+
     const usingUrls = [];
     usingUrls.push(...getFilteredVideoUrl(crads));
     usingUrls.push(...getFilteredVideoUrl(cpads));
@@ -60,6 +65,9 @@ const initPlayerWithApiResponses = async (sudo = false) => {
     const unusingUrls = cachedUrls.filter(
       url => !deduplicatedUsingUrls.includes(url),
     );
+
+    // 배너 정보 캐싱
+    await fetchAndCacheBanners(crads);
 
     console.log('unusingUrls', unusingUrls);
 
@@ -312,11 +320,42 @@ async function initPlayer(crads, device, sudo = false) {
     initPlayerUi(pos);
 
     const playlists = cradsToPlaylists(crads);
+
     const currentTime = addHyphen(getFormattedDate(new Date()));
     removeCradJobs();
     await schedulePlaylists(playlists, currentTime);
   } catch (error) {
     console.log(error);
+  }
+}
+
+/**
+ * crads로 전달 받은 banner data 저장
+ *
+ * @param { Object[] } crads
+ */
+async function fetchAndCacheBanners(crads) {
+  try {
+    let banners = [];
+    crads.slots.map(originSlot => {
+        originSlot.slots.forEach(slot => {
+          slot.files.forEach(file => {
+            const bannerData = getBannerDataFromFile(file);
+            banners.push(bannerData);
+          })
+        });
+      }
+    );
+
+  const filteredBanners = [
+    ...new Map(banners.map(b => [b.id, b])).values()
+  ];
+
+  cacheBanners(filteredBanners);
+
+  console.log('Banners updated from network:', filteredBanners.length);
+  } catch (e) {
+    console.log('Failed to fetch banners from network', e);
   }
 }
 
@@ -543,6 +582,7 @@ function cradsToPlaylists(crads) {
     const filteredSlots = slots.filter(
       slot => slot.categoryId === item.CATEGORY_ID,
     );
+
     return {
       categoryId: item.CATEGORY_ID,
       categoryName: item.CATEGORY_NAME,
@@ -595,7 +635,7 @@ function formatDatePlayAtDawn(dateString) {
 
 /**
  * 일반재생목록 정보를 UI에 표시하기 위해 정제
- *
+ * 
  * @param { code: string, message:string, items: Object[] } radList 서버에서 api를 통해 전달받은 일반재생목록 정보
  * @return { Object[] } 정제된 Array
  */
@@ -649,6 +689,7 @@ function formatSlotToPlaylist(originSlot) {
   };
   const lengths = originSlot.slots.map(slot => slot.files.length);
   for (let i = 0; i < lengths.reduce(lcm); i++) {
+
     originSlot.slots.forEach(slot => {
       const src = fileToPlaylistSrc(slot.files[i % slot.files.length]);
       src.slotId = slot.SLOT_ID;

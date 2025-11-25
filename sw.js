@@ -3,6 +3,7 @@ const DYNAMIC_CACHE_NAME = 'site-dynamic-v125';
 const VIDEO_CACHE_NAME = 'site-video-v4';
 const FONT_CACHE_NAME = 'site-font-v1';
 const APEX_CACHE_NAME = 'site-apex-v1';
+const BANNER_CACHE_NAME = 'site-banner-v1';
 
 const assets = [
   '/pwa-video-player/',
@@ -75,7 +76,8 @@ self.addEventListener('activate', event => {
               key !== DYNAMIC_CACHE_NAME &&
               key !== VIDEO_CACHE_NAME &&
               key !== FONT_CACHE_NAME &&
-              key !== APEX_CACHE_NAME,
+              key !== APEX_CACHE_NAME &&
+              key !== BANNER_CACHE_NAME,
           )
           .map(key => caches.delete(key)),
       );
