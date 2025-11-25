@@ -1,49 +1,41 @@
-
 const BANNER_CACHE_NAME = 'site-banner-v1';
 const POPUP_URL = 'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?';
 
-
-
-// 배너 정보 업데이트
+// =======================
+// 1) 배너 정보 업데이트
+// =======================
 async function updateBanner(fileId) {
-  // 요소 찾기 (각 class는 하나씩만 존재한다고 가정)
-  const $title = document.getElementById('banner-title');
-  const $subtitle = document.getElementById('banner-subtitle');
+  const $title     = document.getElementById('banner-title');
+  const $subtitle  = document.getElementById('banner-subtitle');
   const $promotion = document.getElementById('banner-promotion');
-  const $location = document.getElementById('banner-location');
-  const $duration = document.getElementById('banner-duration');
-  const $opentime = document.getElementById('banner-opentime');
+  const $location  = document.getElementById('banner-location');
+  const $duration  = document.getElementById('banner-duration');
+  const $opentime  = document.getElementById('banner-opentime');
 
-  // Cache Storage에서 찾기
   const file = await getBannerFromCache(fileId);
+
+  const bannerEl = document.getElementById("banner");
 
   // 배너 정보 못 찾으면 숨기기
   if (!file) {
     console.log('배너 정보 없음', fileId);
-    document.getElementById("banner").style.display = "none";
+    if (bannerEl) bannerEl.style.display = "none";
     return;
   }
 
-  document.getElementById("banner").style.display = "block";
+  if (bannerEl) bannerEl.style.display = "block";
 
-  if ($title) {
-    $title.textContent = file.popup_name || '';
-  }
-
-  if ($subtitle) {
-    $subtitle.textContent = file.en_popup_name || '';
-  }
-
-  if ($promotion) {
-    $promotion.textContent = file.promotion || '';
-  }
-
-  if ($location) {
-    $location.textContent = file.popup_location || '';
-  }
+  if ($title)     $title.textContent     = file.popup_name     || '';
+  if ($subtitle)  $subtitle.textContent  = file.en_popup_name  || '';
+  if ($promotion) $promotion.textContent = file.promotion      || '';
+  if ($location)  $location.textContent  = file.popup_location || '';
 
   if ($duration) {
-    $duration.textContent = file.open_from_date + ' ~ ' + file.open_to_date || '';
+    let durationText = '';
+    if (file.open_from_date && file.open_to_date) {
+      durationText = `${file.open_from_date} ~ ${file.open_to_date}`;
+    }
+    $duration.textContent = durationText;
   }
 
   if ($opentime) {
@@ -54,10 +46,10 @@ async function updateBanner(fileId) {
   const url = POPUP_URL + "aid=" + file.info_id;
   setBannerQr(url);
 
-    // ✅ 색 적용 (DB 값 기반)
+  // ✅ 색 적용 (DB 값 기반)
   if (typeof setBannerTheme === 'function') {
-    const bg   = file.banner_bg_color  || '#7c4dff';   // 옵션: 기본값
-    const text = file.banner_text_color || '#ffffff';  // 옵션: 기본값
+    const bg   = file.banner_bg_color   || '#7c4dff';  // 메인 배너 색
+    const text = file.banner_text_color || '#ffffff';  // 텍스트 색
     setBannerTheme(bg, text);
   }
 
@@ -68,6 +60,9 @@ async function updateBanner(fileId) {
 }
 window.updateBanner = updateBanner;
 
+// =======================
+// 2) 파일 → 배너 데이터 변환
+// =======================
 function getBannerDataFromFile(file) {
   return {
     id: file.FILE_ID,
@@ -85,6 +80,9 @@ function getBannerDataFromFile(file) {
   };
 }
 
+// =======================
+// 3) 캐시 I/O
+// =======================
 async function getBannerFromCache(fileId) {
   const key = `/banner/${fileId}`;
   const response = await caches.match(key);
@@ -92,12 +90,11 @@ async function getBannerFromCache(fileId) {
   return await response.json();
 }
 
-
 function formatDotDate(dateStr) {
   if (!dateStr) return null;
-  const d = new Date(dateStr);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const d   = new Date(dateStr);
+  const y   = d.getFullYear();
+  const m   = String(d.getMonth() + 1).padStart(2, "0");
   const day = String(d.getDate()).padStart(2, "0");
   return `${y}.${m}.${day}`;
 }
@@ -108,8 +105,7 @@ async function cacheBanners(banners) {
   for (const banner of banners) {
     if (!banner || banner.id == null) continue;
 
-    const key = `/banner/${banner.id}`; // 키로 쓸 “가짜 URL”
-
+    const key = `/banner/${banner.id}`;
     const response = new Response(JSON.stringify(banner), {
       headers: { 'Content-Type': 'application/json' },
     });
@@ -118,25 +114,25 @@ async function cacheBanners(banners) {
   }
 }
 
+// =======================
+// 4) UI 헬퍼 (IIFE)
+// =======================
 (function () {
 
   function fitAdBanner() {
     const banner = document.querySelector('.ad-player-banner');
     if (!banner) return;
 
-
-    // 기본값으로 초기화
     banner.style.fontSize = '';
 
     const maxSteps = 30;
-    let fs = parseFloat(getComputedStyle(banner).fontSize) || 16;
+    let fs   = parseFloat(getComputedStyle(banner).fontSize) || 16;
     let step = 0;
 
-    // 내용이 배너 영역을 넘치면 조금씩 폰트 크기 줄이기
     while (
       step < maxSteps &&
       (banner.scrollHeight > banner.clientHeight ||
-      banner.scrollWidth  > banner.clientWidth)
+       banner.scrollWidth  > banner.clientWidth)
     ) {
       fs *= 0.9;
       banner.style.fontSize = fs + 'px';
@@ -144,8 +140,7 @@ async function cacheBanners(banners) {
     }
   }
 
-
-  // ------------------ 2) QRCode.js로 QR 생성 ------------------
+  // QRCode.js로 QR 생성
   function setBannerQr(url) {
     const box = document.getElementById('ad-banner-qr-box');
     if (!box || !url) return;
@@ -155,7 +150,7 @@ async function cacheBanners(banners) {
       return;
     }
 
-    box.innerHTML = ''; // 이전 QR 제거
+    box.innerHTML = '';
 
     new QRCode(box, {
       text: url,
@@ -167,37 +162,89 @@ async function cacheBanners(banners) {
     });
   }
 
-  // ------------------ 3) 사용자 지정 색 적용 ------------------
-  // ex) setBannerTheme('#95FAFA', '#222222');
+  // ===== 색 관련 유틸 =====
+  function hexToRgb(hex) {
+    if (!hex) return null;
+    let h = hex.trim();
+
+    if (h[0] === '#') h = h.slice(1);
+    if (h.length === 3) {
+      h = h.split('').map(c => c + c).join('');
+    }
+    if (h.length !== 6) return null;
+
+    const r = parseInt(h.slice(0, 2), 16);
+    const g = parseInt(h.slice(2, 4), 16);
+    const b = parseInt(h.slice(4, 6), 16);
+    if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) return null;
+    return { r, g, b };
+  }
+
+  function rgbToHex(r, g, b) {
+    const toHex = (v) => {
+      const n = Math.max(0, Math.min(255, Math.round(v)));
+      return n.toString(16).padStart(2, '0');
+    };
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  }
+
+  // color1을 base, color2(흰/검정)와 섞기
+  function mixRgb(c1, c2, ratio) {
+    const t = Math.max(0, Math.min(1, ratio));
+    return {
+      r: c1.r * (1 - t) + c2.r * t,
+      g: c1.g * (1 - t) + c2.g * t,
+      b: c1.b * (1 - t) + c2.b * t,
+    };
+  }
+
+  // ▶ 사용자 지정 색 적용
+  //   bgHex: 메인 색 (#rrggbb)
+  //   textHex: 텍스트 색
   function setBannerTheme(bgHex, textHex) {
     const banner = document.querySelector('.ad-player-banner');
     if (!banner) return;
 
+    // 1) 메인 색 기준으로 그라디언트 색 계산
     if (bgHex) {
-      // 사용자가 준 배경색 그대로 사용 (단색)
-      banner.style.background = bgHex;
+      const base = hexToRgb(bgHex);
+      if (base) {
+        const white = { r: 255, g: 255, b: 255 };
+        const black = { r: 0, g: 0, b: 0 };
+
+        // 약간 더 밝은 톤
+        const light = mixRgb(base, white, 0.35); // 35% 흰색 섞기
+        // 살짝 어두운 톤
+        const dark  = mixRgb(base, black, 0.35); // 35% 검정 섞기
+        // 더 깊은 톤
+        const deep  = mixRgb(base, black, 0.6);  // 60% 검정 섞기
+
+        banner.style.setProperty('--ad-banner-main',  bgHex);
+        banner.style.setProperty('--ad-banner-light', rgbToHex(light.r, light.g, light.b));
+        banner.style.setProperty('--ad-banner-dark',  rgbToHex(dark.r,  dark.g,  dark.b));
+        banner.style.setProperty('--ad-banner-deep',  rgbToHex(deep.r,  deep.g,  deep.b));
+        // border는 기존 느낌 유지
+        banner.style.setProperty('--ad-banner-border', 'rgba(255, 255, 255, 0.2)');
+      }
     }
 
+    // 2) 텍스트 색
     if (textHex) {
-      // 배너 전체 텍스트 컬러
       banner.style.color = textHex;
     }
-    // 나머지 요소들은 CSS에서 color: inherit; 이라
-    // 자동으로 textHex 색을 따라감.
   }
 
-  // ------------------ 전역 노출 ------------------
-  window.fitAdBanner   = fitAdBanner;
-  window.setBannerQr   = setBannerQr;
+  // 전역 노출
+  window.fitAdBanner    = fitAdBanner;
+  window.setBannerQr    = setBannerQr;
   window.setBannerTheme = setBannerTheme;
 
-  // ------------------ 초기 로드/리사이즈 ------------------
+  // 초기 로드 / 리사이즈
   window.addEventListener('load', function () {
     fitAdBanner();
   });
 
   window.addEventListener('resize', fitAdBanner);
-
 
   const mp = document.getElementById('modal-player');
   if (window.ResizeObserver && mp) {
@@ -206,4 +253,3 @@ async function cacheBanners(banners) {
   }
 
 })();
-
