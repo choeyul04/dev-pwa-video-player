@@ -47,7 +47,7 @@ const initPlayerWithApiResponses = async (sudo = false) => {
     const ceads = await getDataFromUrl(CEADS_URL);
     const cpads = await getDataFromUrl(CPADS_URL);
 
-    // console.log("crad: ", crads);
+    console.log("crad: ", crads);
     // console.log("device: ", device);
     // console.log("ceads: ", ceads);
     // console.log("cpads: ", cpads);
@@ -68,6 +68,8 @@ const initPlayerWithApiResponses = async (sudo = false) => {
 
     // 배너 정보 캐싱
     await fetchAndCacheBanners(crads);
+    await fetchAndCacheBanners(ceads);
+    await fetchAndCacheBanners(cpads);
 
     console.log('unusingUrls', unusingUrls);
 

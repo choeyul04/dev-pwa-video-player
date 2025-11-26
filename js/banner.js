@@ -1,8 +1,5 @@
-
 const BANNER_CACHE_NAME = 'site-banner-v1';
 const POPUP_URL = 'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?';
-
-
 
 // 배너 정보 업데이트
 async function updateBanner(fileId) {
@@ -75,6 +72,7 @@ function getBannerDataFromFile(file) {
     is_popup: file.IS_POPUP,
     popup_name: file.POPUP_NAME,
     en_popup_name: file.EN_POPUP_NAME,
+    category: file.CATEGORY,
     popup_location: file.POPUP_LOCATION,
     open_tm_range: file.OPEN_TM_RANGE,
     promotion: file.PROMOTION,
