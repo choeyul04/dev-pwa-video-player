@@ -213,12 +213,9 @@ async function cacheBanners(banners) {
         const white = { r: 255, g: 255, b: 255 };
         const black = { r: 0, g: 0, b: 0 };
 
-        // 약간 더 밝은 톤
-        const light = mixRgb(base, white, 0.35); // 35% 흰색 섞기
-        // 살짝 어두운 톤
-        const dark  = mixRgb(base, black, 0.35); // 35% 검정 섞기
-        // 더 깊은 톤
-        const deep  = mixRgb(base, black, 0.6);  // 60% 검정 섞기
+        var light = mixRgb(base, white, 0.40); // 40% 정도 흰색 섞기
+        var dark  = mixRgb(base, black, 0.20); // 20% 정도만 검정 섞기
+        var deep  = mixRgb(base, black, 0.32); // dark보다 조금 더 진하게
 
         banner.style.setProperty('--ad-banner-main',  bgHex);
         banner.style.setProperty('--ad-banner-light', rgbToHex(light.r, light.g, light.b));

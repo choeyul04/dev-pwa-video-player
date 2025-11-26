@@ -317,6 +317,24 @@ nav .sidenav-trigger {
   row-gap: 1.0em;
 }
 
+/* 태그 리스트 */
+.ad-banner-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+
+.ad-banner-tag {
+  padding: 0.25em 0.8em;
+  border-radius: 999px;
+  font-size: 0.78em;
+  font-weight: 500;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
 
 .ad-banner-subtitle {
   font-size: 0.8em;
@@ -328,32 +346,47 @@ nav .sidenav-trigger {
   margin-bottom: 0.35em;
 }
 
+.ad-banner-main {
+  display: flex;
+  flex-direction: column;
+
+  /* 제목 ↔ 태그 ↔ 설명 ↔ 메타 간 간격 */
+  gap: 3.0em;
+}
+
+/* 제목+태그 내부 고정 간격 */
+.ad-banner-heading {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1.5em;   /* 🔽 제목과 태그 사이 간격 (필요하면 0.2~0.3em 정도로 조절) */
+}
+
+/* 제목 */
 .ad-banner-title {
   font-size: 2.1em;
   font-weight: 800;
   line-height: 1.25;
-  margin: 0 0 0.8em;
+  margin: 0;           /* 간격은 전부 gap으로만 관리 */
   color: inherit;
-
 }
 
+/* 설명 */
 .ad-banner-desc {
   font-size: 1.02em;
   line-height: 1.7;
   margin: 0;
   color: inherit;
   opacity: 0.95;
-
 }
 
 /* 메타 정보 블록 */
 .ad-banner-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.75em;
+  gap: 1.5em;
 
   margin: 0;
-  padding-top: 0.9em;
+  padding-top: 1.5em;
   border-top: 1px solid rgba(255, 255, 255, 0.22);
 }
 
@@ -365,17 +398,14 @@ nav .sidenav-trigger {
 
 .ad-banner-meta-icon {
   font-size: 1.25em;
-
   margin-top: 0.05em;
   color: inherit;
   opacity: 0.9;
-
 }
 
 .ad-banner-meta-label {
   font-size: 0.9em;
   color: inherit;
-
   opacity: 0.75;
   margin-bottom: 0.15em;
 }
@@ -385,13 +415,13 @@ nav .sidenav-trigger {
   color: inherit;
 }
 
-
+/* QR 영역 */
 .ad-banner-qr {
   display: flex;
   align-items: center;
   gap: 1.1em;
 
-  padding-top: 1.0em;
+  padding-top: 0.8em;
   border-top: 1px solid rgba(255, 255, 255, 0.18);
 }
 
@@ -406,7 +436,6 @@ nav .sidenav-trigger {
   justify-content: center;
   overflow: hidden;
   box-shadow: 0 0.15em 0.4em rgba(0, 0, 0, 0.25);
-
 }
 
 /* QRCode.js가 만든 img/canvas는 박스를 꽉 채우고 같이 스케일됨 */
@@ -422,7 +451,6 @@ nav .sidenav-trigger {
   line-height: 1.6;
   font-weight: 600;
   color: inherit;
-
 }
 
 /* 모바일(터치 기기) – 위/아래 배치 */
@@ -434,4 +462,3 @@ nav .sidenav-trigger {
     padding: 2.0cqw 2.4cqw 2.1cqw;
   }
 }
-
