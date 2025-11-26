@@ -13,7 +13,6 @@ async function updateBanner(fileId) {
   const $opentime  = document.getElementById('banner-opentime');
 
   const file = await getBannerFromCache(fileId);
-
   const bannerEl = document.getElementById("banner");
 
   // 배너 정보 못 찾으면 숨기기
@@ -41,6 +40,11 @@ async function updateBanner(fileId) {
   if ($opentime) {
     const opentimeHtml = (file.open_tm_range || '').replace(/\|/g, '<br>');
     $opentime.innerHTML = opentimeHtml;
+  }
+
+  // ✅ category → 태그 렌더링 (이모지 제거)
+  if (typeof setBannerTags === 'function') {
+    setBannerTags(file.category || '');
   }
 
   const url = POPUP_URL + "aid=" + file.info_id;
@@ -163,6 +167,47 @@ async function cacheBanners(banners) {
     });
   }
 
+  // ===== 카테고리 → 태그 렌더링 =====
+
+  // "🚗 리빙:💄 뷰티"  →  ["리빙", "뷰티"]
+  function parseCategoryTags(categoryStr) {
+    if (!categoryStr) return [];
+
+    return categoryStr
+      .split(':')               // 콜론 기준 분리
+      .map(s => s.trim())
+      // 앞쪽 이모지·기호 제거 (처음 한글/영문/숫자 전까지 삭제)
+      .map(s => s.replace(/^[^0-9A-Za-z가-힣]+/, ''))
+      .filter(s => s.length > 0);
+  }
+
+  function setBannerTags(categoryStr) {
+    const wrap =
+      document.getElementById('banner-tags') ||
+      document.querySelector('.ad-banner-tags');
+
+    if (!wrap) return;
+
+    const tags = parseCategoryTags(categoryStr);
+
+    // 카테고리 없으면 감춤
+    if (!tags.length) {
+      wrap.innerHTML = '';
+      wrap.style.display = 'none';
+      return;
+    }
+
+    wrap.style.display = 'flex';
+    wrap.innerHTML = '';
+
+    tags.forEach(tag => {
+      const span = document.createElement('span');
+      span.className = 'ad-banner-tag';
+      span.textContent = tag;
+      wrap.appendChild(span);
+    });
+  }
+
   // ===== 색 관련 유틸 =====
   function hexToRgb(hex) {
     if (!hex) return null;
@@ -213,9 +258,9 @@ async function cacheBanners(banners) {
         const white = { r: 255, g: 255, b: 255 };
         const black = { r: 0, g: 0, b: 0 };
 
-        var light = mixRgb(base, white, 0.40); // 40% 정도 흰색 섞기
-        var dark  = mixRgb(base, black, 0.20); // 20% 정도만 검정 섞기
-        var deep  = mixRgb(base, black, 0.32); // dark보다 조금 더 진하게
+        const light = mixRgb(base, white, 0.40); // 40% 정도 흰색 섞기
+        const dark  = mixRgb(base, black, 0.20); // 20% 정도만 검정 섞기
+        const deep  = mixRgb(base, black, 0.32); // dark보다 조금 더 진하게
 
         banner.style.setProperty('--ad-banner-main',  bgHex);
         banner.style.setProperty('--ad-banner-light', rgbToHex(light.r, light.g, light.b));
@@ -236,6 +281,7 @@ async function cacheBanners(banners) {
   window.fitAdBanner    = fitAdBanner;
   window.setBannerQr    = setBannerQr;
   window.setBannerTheme = setBannerTheme;
+  window.setBannerTags  = setBannerTags;
 
   // 초기 로드 / 리사이즈
   window.addEventListener('load', function () {
