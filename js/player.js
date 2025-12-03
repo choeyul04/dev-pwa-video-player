@@ -94,7 +94,7 @@ const fetchVideoAll = async (urls, sudo = false) => {
         cachedOn: getFormattedDate(new Date()),
         deviceId: player.deviceId,
       });
-      enableDeviceIdButton();
+      //enableDeviceIdButton();
     } catch (error) {
       console.log(error);
     }
@@ -582,6 +582,13 @@ async function addReport(currentItem) {
  */
 const reportAll = async () => {
   reports = await db.reports.toArray();
+
+  if (reports.length === 0) {
+    console.log('No cached report found');
+    M.toast({ html: 'No cached report found!' });
+    return;
+  }
+
   const result = await postReport(reports);
   if (result.status === 200) {
     console.log('reports posted!', reports);
