@@ -582,6 +582,13 @@ async function addReport(currentItem) {
  */
 const reportAll = async () => {
   reports = await db.reports.toArray();
+
+  if (reports.length === 0) {
+    console.log('No cached report found');
+    M.toast({ html: 'No cached report found!' });
+    return;
+  }
+
   const result = await postReport(reports);
   if (result.status === 200) {
     console.log('reports posted!', reports);
