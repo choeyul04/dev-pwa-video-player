@@ -433,6 +433,7 @@ function applyLockPosition(lockPositionSwitchInput) {
       $(playerDOM).resizable(isChecked ? 'disable' : 'enable');
     })
     .catch(error => {
+      console.log("lock error: ", error);
       M.toast({ html: '크기 & 위치 고정 여부 연동 실패!', classes: 'red' });
     });
 }
