@@ -252,7 +252,7 @@ nav .sidenav-trigger {
   width: 100% !important;
   height: 100% !important;
 }
-/* 오른쪽 팝업 배너 */
+
 .ad-player-banner {
   flex: 1;
   box-sizing: border-box;
@@ -261,11 +261,27 @@ nav .sidenav-trigger {
   font-size: min(1.55cqw, 2.3cqh);
 
   padding: 1.6cqw 2.0cqw 1.7cqw;
-  color: #f5f5f5;
+
+
+  /* 기본값 (사용자가 색 안 줬을 때만 사용됨) */
+  --ad-banner-main:  #7c4dff;
+  --ad-banner-light: #b388ff;
+  --ad-banner-dark:  #4527a0;
+  --ad-banner-deep:  #1a237e;
+  --ad-banner-border: rgba(255, 255, 255, 0.2);
+
+  color: #f5f5f5; /* ← JS에서 덮어쓰게 됨 */
 
   background:
-    linear-gradient(160deg, #b388ff 0%, #7c4dff 35%, #4527a0 70%, #1a237e 100%);
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
+    linear-gradient(
+      160deg,
+      var(--ad-banner-light) 0%,
+      var(--ad-banner-main)  35%,
+      var(--ad-banner-dark)  70%,
+      var(--ad-banner-deep)  100%
+    );
+  border-left: 1px solid var(--ad-banner-border);
+
 
   font-family: 'Noto Sans KR', sans-serif;
   word-break: keep-all;
@@ -275,7 +291,6 @@ nav .sidenav-trigger {
   align-items: stretch;
   position: relative;
 
-  /* ✅ 배너 밖으로 새는 건 숨기고, 크기 줄이는 건 JS가 담당 */
   overflow: hidden;
 }
 
@@ -296,42 +311,82 @@ nav .sidenav-trigger {
   z-index: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;   /* 세 블록을 세로로 적당히 분배 */
+  justify-content: space-between;
+
   min-height: 100%;
   row-gap: 1.0em;
 }
 
-/* 이하 나머지는 그대로… */
+/* 태그 리스트 */
+.ad-banner-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4em;
+}
+
+.ad-banner-tag {
+  padding: 0.25em 0.8em;
+  border-radius: 999px;
+  font-size: 0.78em;
+  font-weight: 500;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+
 .ad-banner-subtitle {
   font-size: 0.8em;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.8);
+  color: inherit;
+  opacity: 0.8;
+
   margin-bottom: 0.35em;
 }
 
+.ad-banner-main {
+  display: flex;
+  flex-direction: column;
+
+  /* 제목 ↔ 태그 ↔ 설명 ↔ 메타 간 간격 */
+  gap: 3.0em;
+}
+
+/* 제목+태그 내부 고정 간격 */
+.ad-banner-heading {
+  display: flex;
+  flex-direction: column;
+  row-gap: 1.5em;   /* 🔽 제목과 태그 사이 간격 (필요하면 0.2~0.3em 정도로 조절) */
+}
+
+/* 제목 */
 .ad-banner-title {
   font-size: 2.1em;
   font-weight: 800;
   line-height: 1.25;
-  margin: 0 0 0.8em;
+  margin: 0;           /* 간격은 전부 gap으로만 관리 */
+  color: inherit;
 }
 
+/* 설명 */
 .ad-banner-desc {
   font-size: 1.02em;
   line-height: 1.7;
   margin: 0;
-  color: rgba(255, 255, 255, 0.95);
+  color: inherit;
+  opacity: 0.95;
 }
 
 /* 메타 정보 블록 */
 .ad-banner-meta {
   display: flex;
   flex-direction: column;
-  gap: 0.75em;
+  gap: 1.5em;
 
   margin: 0;
-  padding-top: 0.9em;
+  padding-top: 1.5em;
   border-top: 1px solid rgba(255, 255, 255, 0.22);
 }
 
@@ -343,27 +398,30 @@ nav .sidenav-trigger {
 
 .ad-banner-meta-icon {
   font-size: 1.25em;
-  opacity: 0.95;
   margin-top: 0.05em;
+  color: inherit;
+  opacity: 0.9;
 }
 
 .ad-banner-meta-label {
   font-size: 0.9em;
+  color: inherit;
   opacity: 0.75;
   margin-bottom: 0.15em;
 }
 
 .ad-banner-meta-value {
   font-size: 1.05em;
+  color: inherit;
 }
 
-/* QR 영역 – 더 이상 margin-top:auto 안 씀 */
+/* QR 영역 */
 .ad-banner-qr {
   display: flex;
   align-items: center;
   gap: 1.1em;
 
-  padding-top: 1.0em;
+  padding-top: 0.8em;
   border-top: 1px solid rgba(255, 255, 255, 0.18);
 }
 
@@ -371,11 +429,13 @@ nav .sidenav-trigger {
   width: 5.6em;
   aspect-ratio: 1 / 1;
   border-radius: 0.5em;
-  background: radial-gradient(circle at top, #ffffff, #dcd3ff);
+  background: #ffffff;              /* 항상 흰색 박스 */
+
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
+  box-shadow: 0 0.15em 0.4em rgba(0, 0, 0, 0.25);
 }
 
 /* QRCode.js가 만든 img/canvas는 박스를 꽉 채우고 같이 스케일됨 */
@@ -385,11 +445,12 @@ nav .sidenav-trigger {
   height: 80%;
   display: block;
 }
+
 .ad-banner-qr-text {
   font-size: 1.0em;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.95);
   font-weight: 600;
+  color: inherit;
 }
 
 /* 모바일(터치 기기) – 위/아래 배치 */
