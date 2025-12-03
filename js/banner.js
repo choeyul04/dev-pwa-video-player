@@ -13,16 +13,25 @@ async function updateBanner(fileId) {
   const $opentime  = document.getElementById('banner-opentime');
 
   const file = await getBannerFromCache(fileId);
-  const bannerEl = document.getElementById("banner");
 
   // 배너 정보 못 찾으면 숨기기
   if (!file) {
     console.log('배너 정보 없음', fileId);
-    if (bannerEl) bannerEl.style.display = "none";
+    setBannerVisible(false);
     return;
   }
 
-  if (bannerEl) bannerEl.style.display = "block";
+  // ✅ IS_POPUP 값에 따라 배너 표시 여부 결정
+  //    1 → 배너 표시, 0 → 배너 숨김
+  const flag = String(file.is_popup ?? '0'); // undefined이면 기본 0
+  const showBanner = flag === '1';           // 🔁 여기만 반대로!
+
+  setBannerVisible(showBanner);
+
+  // 숨길 거면 내용 세팅 안 하고 바로 종료
+  if (!showBanner) {
+    return;
+  }
 
   if ($title)     $title.textContent     = file.popup_name     || '';
   if ($subtitle)  $subtitle.textContent  = file.en_popup_name  || '';
@@ -117,6 +126,19 @@ async function cacheBanners(banners) {
 
     await cache.put(key, response);
   }
+}
+
+/* -------------------------------------------------------
+ * 배너 show / hide 제어
+ *   - IS_POPUP = 1  → 배너 표시
+ *   - IS_POPUP = 0  → 배너 숨김 (동영상만 보이게)
+ * ----------------------------------------------------- */
+function setBannerVisible(visible) {
+  const banner = document.getElementById("banner");
+
+  if (!banner) return;
+
+  banner.style.display = visible ? '' : 'none';
 }
 
 // =======================
