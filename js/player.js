@@ -94,7 +94,7 @@ const fetchVideoAll = async (urls, sudo = false) => {
         cachedOn: getFormattedDate(new Date()),
         deviceId: player.deviceId,
       });
-      enableDeviceIdButton();
+      //enableDeviceIdButton();
     } catch (error) {
       console.log(error);
     }
