@@ -35,7 +35,19 @@ async function updateBanner(fileId) {
 
   if ($title)     $title.textContent     = file.popup_name     || '';
   if ($subtitle)  $subtitle.textContent  = file.en_popup_name  || '';
-  if ($promotion) $promotion.textContent = file.promotion      || '';
+  if ($promotion) {
+    let promo = file.promotion || '';
+
+    // 1) CRLF(\r\n)을 LF(\n)로 정규화
+    promo = promo.replace(/\r\n/g, '\n');
+
+    // 2) LF(\n) 하나당 <br> 하나
+    promo = promo.replace(/\n/g, '<br>');
+
+    // 3) HTML로 넣어서 줄바꿈 반영
+    $promotion.innerHTML = promo;
+  }
+
   if ($location)  $location.textContent  = file.popup_location || '';
 
   if ($duration) {
