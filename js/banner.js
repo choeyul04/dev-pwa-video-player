@@ -59,9 +59,21 @@ async function updateBanner(fileId) {
   }
 
   if ($opentime) {
-    const opentimeHtml = (file.open_tm_range || '').replace(/\|/g, '<br>');
+    // 예: "평일 13:00 ~ 20:00|주말 10:00 ~ 19:00"
+    const raw = file.open_tm_range || '';
+    const parts = raw
+      .split('|')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+
+    // 각 구간을 한 줄(span)로 만들고, 줄 안에서는 줄바꿈 금지
+    const opentimeHtml = parts
+      .map(line => `<span class="ad-banner-time-line">${line}</span>`)
+      .join('');
+
     $opentime.innerHTML = opentimeHtml;
   }
+
 
   // ✅ category → 태그 렌더링 (이모지 제거)
   if (typeof setBannerTags === 'function') {
