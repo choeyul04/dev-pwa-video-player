@@ -6,7 +6,7 @@ const APEX_CACHE_NAME = 'site-apex-v1';
 const BANNER_CACHE_NAME = 'site-banner-v1';
 
 const assets = [
-  '/pwa-video-player/',
+  '/',
   'index.html',
   'sw-installed.html',
   'js/app.js',
@@ -26,7 +26,7 @@ const assets = [
   'css/jquery-ui.min.css',
   'js/axios.min.js',
   'js/jquery-ui.min.js',
-  'js/mqttws31.min.js',
+  'js/paho-mqtt-min.js',
   'js/player.js',
   'js/ws.js',
   'https://fonts.googleapis.com/icon?family=Material+Icons',
@@ -77,7 +77,7 @@ self.addEventListener('activate', event => {
               key !== VIDEO_CACHE_NAME &&
               key !== FONT_CACHE_NAME &&
               key !== APEX_CACHE_NAME &&
-              key !== BANNER_CACHE_NAME,
+              key !== BANNER_CACHE_NAME
           )
           .map(key => caches.delete(key)),
       );
@@ -194,4 +194,4 @@ const fetchVideo = async request => {
     console.log('video cached', request.url);
   }
   return response;
-};
+}; 

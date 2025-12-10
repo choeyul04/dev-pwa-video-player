@@ -752,6 +752,7 @@ const initialization = async () => {
     const keys = await caches.keys();
     keys.forEach(async cache => await caches.delete(cache));
   }
+
   const registration = await navigator.serviceWorker.getRegistration();
   await registration.unregister();
 

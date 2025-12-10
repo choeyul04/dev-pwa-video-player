@@ -47,10 +47,10 @@ const initPlayerWithApiResponses = async (sudo = false) => {
     const ceads = await getDataFromUrl(CEADS_URL);
     const cpads = await getDataFromUrl(CPADS_URL);
 
-    // console.log("crad: ", crads);
-    // console.log("device: ", device);
-    // console.log("ceads: ", ceads);
-    // console.log("cpads: ", cpads);
+    console.log("crad: ", crads);
+    console.log("device: ", device);
+    console.log("ceads: ", ceads);
+    console.log("cpads: ", cpads);
 
     const usingUrls = [];
     usingUrls.push(...getFilteredVideoUrl(crads));
