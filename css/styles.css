@@ -234,6 +234,10 @@ nav .sidenav-trigger {
  * AD Wright - Video Player Right Banner (Popup Info)
  ***************************************************************************************/
 
+/***************************************************************************************
+ * AD Wright - Video Player Right Banner (Popup Info)
+ ***************************************************************************************/
+
 /* 레이아웃: 왼쪽 비디오 / 오른쪽 배너 */
 .ad-player-layout {
   display: flex;
@@ -243,7 +247,7 @@ nav .sidenav-trigger {
 
 /* 왼쪽: 비디오 영역 */
 .ad-player-left {
-  flex: 4; /* 비디오 3, 배너 1 → 항상 3:1 비율 */
+  flex: 4;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -261,18 +265,25 @@ nav .sidenav-trigger {
   flex: 1;
   box-sizing: border-box;
 
-  /* 모달 크기에 비례해서 반응(최소값 없음) */
-  font-size: min(1.55cqw, 2.3cqh);
-  padding: 1.4cqw 1.8cqw 1.6cqw;
+  /* ✅ cqw/cqh 단위 계산 안정화 */
+  container-type: size;
 
-  /* 기본값 (사용자가 색 안 줬을 때만 사용됨) */
+  /* ✅ 글자 크기/리사이즈 순간에도 최소값 보장 */
+  font-size: clamp(14px, min(1.55cqw, 2.3cqh), 18px);
+
+  /* ✅ 바깥 패딩도 최소값 보장 (0으로 떨어지는 순간 방지) */
+  padding:
+    clamp(12px, 1.4cqw, 18px)
+    clamp(14px, 1.8cqw, 22px)
+    clamp(12px, 1.6cqw, 20px);
+
   --ad-banner-main:  #7c4dff;
   --ad-banner-light: #b388ff;
   --ad-banner-dark:  #4527a0;
   --ad-banner-deep:  #1a237e;
   --ad-banner-border: rgba(255,255,255,0.2);
 
-  color: #f5f5f5; /* JS에서 덮어쓸 수 있음 */
+  color: #f5f5f5;
 
   background:
     linear-gradient(
@@ -306,24 +317,38 @@ nav .sidenav-trigger {
   pointer-events: none;
 }
 
-/* 내부 정렬
-   - 맨 위 부제는 고정
-   - 가운데 main 카드가 flex:1로 남는 높이를 채움
-   - 맨 아래 QR은 margin-top:auto 로 하단 고정 느낌 */
+/* ✅ 핵심: HTML 변경 없이 "가운데로 묶기 + 위/아래 최소 여백" */
 .ad-banner-inner {
   position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+
+  /* 가운데로 모으기 */
+  justify-content: center;
+
+  /* 부모 높이 채우기 */
   min-height: 100%;
 
-  /* 부제 ↔ main ↔ QR 사이 최소 간격 + 화면 높이에 따라 약간씩 증가 */
-  row-gap: clamp(0.6em, 1.2cqh, 1.4em);
+  /* 요소 간 간격 */
+  gap: 1.0em;
+}
+
+/* ✅ 위/아래 스페이서(가짜 flex 아이템)
+   - font-size가 커져도 최소 여백은 절대 0이 안 됨
+   - font-size가 작아져도 여백이 갑자기 사라지지 않음 */
+.ad-banner-inner::before,
+.ad-banner-inner::after {
+  content: "";
+  display: block;
+  flex: 0 0 auto;
+
+  /* 최소 여백(px) + 화면 높이에 따른 약간의 가변 */
+  height: clamp(12px, 2.0cqh, 24px);
 }
 
 /* ------------------------------------------------------------------ */
-/* 메인 카드 (제목+태그+설명+메타 묶음) */
+/* 메인 카드 */
 /* ------------------------------------------------------------------ */
 .ad-banner-main {
   background: linear-gradient(
@@ -340,13 +365,10 @@ nav .sidenav-trigger {
   display: flex;
   flex-direction: column;
 
-  /* 내부 요소(제목/태그/설명/메타) 사이 간격이
-     화면이 높아질수록 조금 더 벌어지도록 */
-  row-gap: clamp(0.7em, 1.4cqh, 1.6em);
+  row-gap: 0.8em;
 
-  /* 남는 세로 공간을 최대한 차지해서 가운데 영역을 채우게 함 */
-  flex: 1 1 auto;
-  justify-content: space-between;
+  /* ✅ 중앙 묶기에서 메인이 남는 공간을 억지로 먹지 않게 */
+  flex: 0 0 auto;
 }
 
 /* 영문 부제 pill */
@@ -372,16 +394,14 @@ nav .sidenav-trigger {
   border: 1px solid rgba(255,255,255,0.3);
   box-shadow: 0 0.25em 0.6em rgba(0,0,0,0.25);
 
-  margin-bottom: 0.35em;
+  margin-bottom: 0.4em;
 }
 
 /* 제목/태그 묶음 */
 .ad-banner-heading {
   display: flex;
   flex-direction: column;
-
-  /* 제목 ↔ 태그 간 간격도 약간 가변 */
-  row-gap: clamp(0.5em, 0.9cqh, 1.2em);
+  row-gap: 0.7em;
 }
 
 /* 태그 리스트 */
@@ -422,26 +442,22 @@ nav .sidenav-trigger {
 }
 
 /* ------------------------------------------------------------------ */
-/* 메타 카드 (위치 / 기간 / 시간) */
+/* 메타 카드 */
 /* ------------------------------------------------------------------ */
 .ad-banner-meta {
   display: flex;
   flex-direction: column;
-
-  /* 카드들 사이 간격 0.7em ~ 1.4em */
-  row-gap: clamp(0.7em, 1.2cqh, 1.4em);
-
-  padding-top: clamp(0.8em, 1.2cqh, 1.5em);
+  row-gap: 0.8em;
+  padding-top: 1.0em;
   border-top: 1px solid rgba(255,255,255,0.22);
 }
 
 .ad-banner-meta-row {
   display: flex;
-  gap: clamp(0.5em, 0.9cqh, 1em);
+  gap: 0.7em;
   align-items: flex-start;
 
-  padding: clamp(0.6em, 1.0cqh, 0.9em)
-           clamp(0.8em, 1.1cqh, 1.0em);
+  padding: 0.65em 0.9em;
   border-radius: 0.6em;
 
   background: linear-gradient(
@@ -487,8 +503,7 @@ nav .sidenav-trigger {
 
   box-shadow: 0 1em 1.8em rgba(0,0,0,0.45);
 
-  /* 메인 카드 아래 여백도 높이에 따라 조금씩 변경 */
-  margin-top: clamp(0.8em, 1.8cqh, 1.8em);
+  margin-top: 0;
   flex: 0 0 auto;
 }
 
@@ -518,9 +533,7 @@ nav .sidenav-trigger {
   line-height: 1.5;
 }
 
-/* ------------------------------------------------------------------
- * 텍스트 공통 옵션 (단어 기준 줄바꿈)
- * ------------------------------------------------------------------ */
+/* 텍스트 공통 옵션 */
 .ad-banner-title,
 .ad-banner-desc,
 .ad-banner-meta-label,
@@ -531,25 +544,26 @@ nav .sidenav-trigger {
   text-shadow: 0 1px 2px rgba(0,0,0,0.35);
 }
 
-/* 영업시간: 요일 단위(|)로만 줄바꿈, 줄 안에서는 줄바꿈 금지 */
+/* 영업시간: 요일 단위(|)로만 줄바꿈 */
 .ad-banner-time-line {
   display: block;
   white-space: nowrap;
 }
 
-/* 메타/QR 텍스트 살짝 더 굵게 */
 .ad-banner-desc,
 .ad-banner-meta-value,
 .ad-banner-qr-text {
   font-weight: 600;
 }
 
-/* 모바일(터치 기기) – 위/아래 배치 */
+/* 모바일(터치 기기) */
 @media not (pointer: fine) {
   .ad-player-layout {
     flex-direction: column;
   }
   .ad-player-banner {
-    padding: 2.0cqw 2.4cqw;
+    padding:
+      clamp(14px, 2.0cqw, 22px)
+      clamp(16px, 2.4cqw, 26px);
   }
 }
