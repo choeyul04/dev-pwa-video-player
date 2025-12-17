@@ -172,6 +172,13 @@ nav .sidenav-trigger {
 .input-field label {
   color: var(--secondary);
 }
+
+/* ✅ Device ID 라벨-입력칸 간격(입력칸을 아래로) main 복붙*/
+#device-id{
+  margin-top: 12px !important;
+}
+
+
 /* label focus color */
 .input-field input[type='text']:focus + label {
   color: var(--secondary) !important;
@@ -228,25 +235,45 @@ nav .sidenav-trigger {
 }
 
 
-/***************************************************************************************/
-
 /***************************************************************************************
  * AD Wright - Video Player Right Banner (Popup Info)
  ***************************************************************************************/
-
 /***************************************************************************************
  * AD Wright - Video Player Right Banner (Popup Info)
+ * ✅ 목표
+ *  - 같은 비율이면 크기만 줄여도 "그대로 축소된 모습" 유지
+ *  - px clamp(최소/최대) 제거
+ *  - 스크롤/ellipsis/임의 줄바꿈 금지
+ *  - 삐져나옴/미세 1px 잘림 방지
+ *  - 하단 모드에서만 발생하던 "과한 축소/빈공간/자잘한 잘림" 해결
+ *  - ✅ 오른쪽(기본) 모드에서는 예전처럼 '가운데로 모이게'
+ *  - ✅ 배너가 없을 땐 비디오가 100% 차지 (하단모드 80% 금지)
+ *  - ✅ QR 흰 박스가 테두리에 붙는 현상 방지(안전 패딩)
  ***************************************************************************************/
 
-/* 레이아웃: 왼쪽 비디오 / 오른쪽 배너 */
-.ad-player-layout {
+/* ✅ modal-player 비율 기준 */
+#modal-player{
+  container-type: size;
+  container-name: modalPlayer;
+}
+
+/* ✅ shrink 허용 */
+.ad-player-layout,
+.ad-player-left,
+.ad-player-banner{
+  min-width: 0;
+  min-height: 0;
+}
+
+/* 레이아웃 */
+.ad-player-layout{
   display: flex;
   width: 100%;
   height: 100%;
 }
 
-/* 왼쪽: 비디오 영역 */
-.ad-player-left {
+/* 비디오 */
+.ad-player-left{
   flex: 4;
   display: flex;
   align-items: center;
@@ -254,34 +281,29 @@ nav .sidenav-trigger {
   background: #000;
 }
 
-/* video.js 가 inline 스타일로 박는 width/height 덮어쓰기 */
-.ad-player-left .video-js {
+.ad-player-left .video-js{
   width: 100% !important;
   height: 100% !important;
 }
 
-/* 오른쪽: 팝업 정보 배너 */
-.ad-player-banner {
+/* 배너 */
+.ad-player-banner{
   flex: 1;
   box-sizing: border-box;
 
-  /* ✅ cqw/cqh 단위 계산 안정화 */
   container-type: size;
 
-  /* ✅ 글자 크기/리사이즈 순간에도 최소값 보장 */
-  font-size: clamp(14px, min(1.55cqw, 2.3cqh), 18px);
+  font-size: min(1.55cqw, 2.3cqh);
+  padding: 1.4cqw 1.8cqw 1.6cqw;
 
-  /* ✅ 바깥 패딩도 최소값 보장 (0으로 떨어지는 순간 방지) */
-  padding:
-    clamp(12px, 1.4cqw, 18px)
-    clamp(14px, 1.8cqw, 22px)
-    clamp(12px, 1.6cqw, 20px);
-
+  /* ✅ 1500페이지 로직과 동일한 기본 색 구성(비율 동일) */
   --ad-banner-main:  #7c4dff;
-  --ad-banner-light: #b388ff;
-  --ad-banner-dark:  #4527a0;
-  --ad-banner-deep:  #1a237e;
-  --ad-banner-border: rgba(255,255,255,0.2);
+  --ad-banner-light: color-mix(in srgb, var(--ad-banner-main) 55%, #ffffff 45%);
+  --ad-banner-dark:  color-mix(in srgb, var(--ad-banner-main) 80%, #000000 20%);
+  --ad-banner-deep:  color-mix(in srgb, var(--ad-banner-main) 60%, #000000 40%);
+
+  --ad-bw: 0.08em;
+  --ad-border: rgba(255,255,255,0.2);
 
   color: #f5f5f5;
 
@@ -294,20 +316,21 @@ nav .sidenav-trigger {
       var(--ad-banner-deep)  100%
     );
 
-  border-left: 1px solid var(--ad-banner-border);
+  border-left: var(--ad-bw) solid var(--ad-border);
   font-family: 'Noto Sans KR', sans-serif;
 
   word-break: keep-all;
-  overflow-wrap: break-word;
+  overflow-wrap: normal;
 
   display: flex;
   align-items: stretch;
   position: relative;
-  overflow: hidden;
+
+  overflow: clip;
 }
 
 /* 광택 */
-.ad-player-banner::before {
+.ad-player-banner::before{
   content: "";
   position: absolute;
   inset: 0;
@@ -317,40 +340,37 @@ nav .sidenav-trigger {
   pointer-events: none;
 }
 
-/* ✅ 핵심: HTML 변경 없이 "가운데로 묶기 + 위/아래 최소 여백" */
-.ad-banner-inner {
+/* 내부 */
+.ad-banner-inner{
   position: relative;
   z-index: 1;
+
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+
   display: flex;
   flex-direction: column;
 
-  /* 가운데로 모으기 */
+  /* ✅ 오른쪽(기본) 모드: 가운데로 */
   justify-content: center;
 
-  /* 부모 높이 채우기 */
-  min-height: 100%;
-
-  /* 요소 간 간격 */
   gap: 1.0em;
+  padding-block: 0.14em;
 }
 
-/* ✅ 위/아래 스페이서(가짜 flex 아이템)
-   - font-size가 커져도 최소 여백은 절대 0이 안 됨
-   - font-size가 작아져도 여백이 갑자기 사라지지 않음 */
+/* 오른쪽 모드 숨통 */
 .ad-banner-inner::before,
-.ad-banner-inner::after {
+.ad-banner-inner::after{
   content: "";
   display: block;
   flex: 0 0 auto;
-
-  /* 최소 여백(px) + 화면 높이에 따른 약간의 가변 */
-  height: clamp(12px, 2.0cqh, 24px);
+  height: 1.1cqh;
 }
 
-/* ------------------------------------------------------------------ */
 /* 메인 카드 */
-/* ------------------------------------------------------------------ */
-.ad-banner-main {
+.ad-banner-main{
   background: linear-gradient(
     145deg,
     color-mix(in srgb, var(--ad-banner-main) 65%, #ffffff 35%),
@@ -360,19 +380,21 @@ nav .sidenav-trigger {
   border-radius: 0.7em;
   padding: 0.9em 1.1em;
   box-shadow: 0 0.7em 1.4em rgba(0,0,0,0.30);
-  border: 1px solid rgba(255,255,255,0.35);
+  border: var(--ad-bw) solid rgba(255,255,255,0.35);
 
   display: flex;
   flex-direction: column;
-
   row-gap: 0.8em;
 
-  /* ✅ 중앙 묶기에서 메인이 남는 공간을 억지로 먹지 않게 */
   flex: 0 0 auto;
+
+  min-width: 0;
+  min-height: 0;
+  overflow: clip;
 }
 
 /* 영문 부제 pill */
-.ad-banner-subtitle {
+.ad-banner-subtitle{
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
@@ -391,68 +413,88 @@ nav .sidenav-trigger {
   letter-spacing: 0.18em;
   text-transform: uppercase;
 
-  border: 1px solid rgba(255,255,255,0.3);
+  border: var(--ad-bw) solid rgba(255,255,255,0.3);
   box-shadow: 0 0.25em 0.6em rgba(0,0,0,0.25);
 
   margin-bottom: 0.4em;
+
+  flex: 0 0 auto;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: clip;
+  text-overflow: clip;
 }
 
-/* 제목/태그 묶음 */
-.ad-banner-heading {
+/* 제목/태그 */
+.ad-banner-heading{
   display: flex;
   flex-direction: column;
   row-gap: 0.7em;
+  min-width: 0;
+  overflow: clip;
 }
 
-/* 태그 리스트 */
-.ad-banner-tags {
+.ad-banner-tags{
   display: flex;
   flex-wrap: wrap;
   gap: 0.4em;
+  min-width: 0;
+  overflow: clip;
 }
 
-.ad-banner-tag {
+.ad-banner-tag{
   padding: 0.25em 0.8em;
   border-radius: 999px;
   font-size: 0.78em;
   font-weight: 500;
   color: inherit;
   background: rgba(0,0,0,0.18);
-  border: 1px solid rgba(255,255,255,0.25);
+  border: var(--ad-bw) solid rgba(255,255,255,0.25);
   backdrop-filter: blur(4px);
+
   white-space: nowrap;
+  overflow: clip;
+  text-overflow: clip;
+  max-width: 100%;
 }
 
-/* 제목 */
-.ad-banner-title {
+.ad-banner-title{
   font-size: 2em;
   font-weight: 800;
   line-height: 1.25;
   margin: 0;
   color: inherit;
+  min-width: 0;
+  overflow: clip;
+  text-overflow: clip;
 }
 
-/* 내용 */
-.ad-banner-desc {
+.ad-banner-desc{
   font-size: 1em;
   line-height: 1.6;
   margin: 0;
   color: inherit;
   opacity: 0.95;
+
+  min-width: 0;
+  overflow: clip;
+  text-overflow: clip;
 }
 
-/* ------------------------------------------------------------------ */
-/* 메타 카드 */
-/* ------------------------------------------------------------------ */
-.ad-banner-meta {
+/* 메타 */
+.ad-banner-meta{
   display: flex;
   flex-direction: column;
   row-gap: 0.8em;
   padding-top: 1.0em;
-  border-top: 1px solid rgba(255,255,255,0.22);
+  border-top: var(--ad-bw) solid rgba(255,255,255,0.22);
+
+  min-width: 0;
+  min-height: 0;
+  overflow: clip;
 }
 
-.ad-banner-meta-row {
+.ad-banner-meta-row{
   display: flex;
   gap: 0.7em;
   align-items: flex-start;
@@ -466,28 +508,45 @@ nav .sidenav-trigger {
     color-mix(in srgb, var(--ad-banner-main) 95%, #000000 5%)
   );
 
-  border: 1px solid rgba(255,255,255,0.3);
+  border: var(--ad-bw) solid rgba(255,255,255,0.3);
   box-shadow: 0 0.7em 1.5em rgba(0,0,0,0.35);
+
+  min-width: 0;
+  overflow: clip;
 }
 
-.ad-banner-meta-icon {
+.ad-banner-meta-icon{
   font-size: 1.2em;
   opacity: 0.9;
+  flex: 0 0 auto;
 }
 
-.ad-banner-meta-label {
+.ad-banner-meta-label{
   font-size: 0.85em;
   opacity: 0.8;
 }
 
-.ad-banner-meta-value {
+.ad-banner-meta-value{
   font-size: 1em;
+  min-width: 0;
+  max-width: 100%;
+  overflow: clip;
+  text-overflow: clip;
 }
 
-/* ------------------------------------------------------------------ */
-/* QR 카드 */
-/* ------------------------------------------------------------------ */
-.ad-banner-qr {
+/* 시간: | 라인 단위 줄바꿈 금지 */
+#banner-opentime .ad-banner-time-line{
+  display: block;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  max-width: 100%;
+  overflow: clip;
+  text-overflow: clip;
+}
+
+/* QR */
+.ad-banner-qr{
   display: flex;
   align-items: center;
   gap: 1em;
@@ -505,65 +564,267 @@ nav .sidenav-trigger {
 
   margin-top: 0;
   flex: 0 0 auto;
+  min-width: 0;
+
+  overflow: clip;
 }
 
-.ad-banner-qr-box {
+/* ✅ QR 흰 박스: 테두리에 딱 붙지 않도록 “박스 내부 패딩”으로 안전 여백 확보 */
+.ad-banner-qr-box{
   width: 5em;
   aspect-ratio: 1 / 1;
   border-radius: 0.4em;
   background: #fff;
-  overflow: hidden;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
   box-shadow: 0 0.15em 0.4em rgba(0,0,0,0.25);
+  overflow: clip;
+
+  padding: 0.45em;           /* ✅ 핵심 */
+  box-sizing: border-box;
 }
 
+/* ✅ 내부 QR은 100%로 채우고, padding이 “여백”이 됨 */
 .ad-banner-qr-box img,
-.ad-banner-qr-box canvas {
-  width: 80%;
-  height: 80%;
+.ad-banner-qr-box canvas{
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  object-fit: contain;
 }
 
-.ad-banner-qr-text {
+.ad-banner-qr-text{
   font-size: 0.95em;
   font-weight: 600;
   line-height: 1.5;
+  min-width: 0;
+
+  overflow: clip;
+  text-overflow: clip;
+  overflow-wrap: normal;
+  word-break: keep-all;
 }
 
-/* 텍스트 공통 옵션 */
+/* 공통 텍스트 */
 .ad-banner-title,
 .ad-banner-desc,
 .ad-banner-meta-label,
 .ad-banner-meta-value,
-.ad-banner-qr-text {
-  word-break: keep-all;
-  overflow-wrap: break-word;
+.ad-banner-qr-text,
+.ad-banner-tag,
+.ad-banner-subtitle{
   text-shadow: 0 1px 2px rgba(0,0,0,0.35);
 }
 
-/* 영업시간: 요일 단위(|)로만 줄바꿈 */
-.ad-banner-time-line {
-  display: block;
-  white-space: nowrap;
-}
+/* =========================================================
+ * ✅ 하단 모드(배너 아래)
+ * ======================================================= */
+@container modalPlayer (max-aspect-ratio: 1 / 1.2){
 
-.ad-banner-desc,
-.ad-banner-meta-value,
-.ad-banner-qr-text {
-  font-weight: 600;
-}
+  .ad-player-layout{ flex-direction: column; }
 
-/* 모바일(터치 기기) */
-@media not (pointer: fine) {
-  .ad-player-layout {
+  .ad-player-left{
+    flex: 0 0 80%;
+    height: 80%;
+    min-height: 0;
+  }
+
+  .ad-player-banner{
+    width: 100%;
+    border-left: 0;
+    border-top: var(--ad-bw) solid var(--ad-border);
+
+    flex: 0 0 20%;
+    height: 20%;
+    min-height: 0;
+
+    overflow: clip;
+
+    font-size: min(1.62cqw, 2.18cqh);
+    padding: 1.00cqh 1.10cqw;
+  }
+
+  .ad-banner-inner{
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1.52fr) minmax(0, 0.48fr);
+    grid-template-rows: auto 1fr;
+    grid-template-areas:
+      "sub  qr"
+      "main qr";
+
+    gap: 0.8cqh 0.85cqw;
+
+    padding-block: 0;
+
+    align-items: stretch;
+    justify-items: stretch;
+  }
+
+  .ad-banner-inner::before,
+  .ad-banner-inner::after{
+    display: none !important;
+    content: none !important;
+  }
+
+  .ad-banner-subtitle{
+    grid-area: sub;
+    margin: 0;
+    padding: 0.22em 0.80em;
+    font-size: 0.78em;
+    letter-spacing: 0.12em;
+    overflow: clip;
+  }
+
+  .ad-banner-main{
+    grid-area: main;
+
+    display: grid;
+    grid-template-columns: minmax(0, 1.10fr) minmax(0, 0.90fr);
+    grid-template-areas:
+      "heading meta"
+      "desc    meta";
+
+    column-gap: 0.90cqw;
+    row-gap: 0.65cqh;
+
+    padding: 2.3cqh 1.10cqw;
+
+    min-width: 0;
+    min-height: 0;
+    overflow: clip;
+  }
+
+  .ad-banner-heading{ grid-area: heading; }
+  .ad-banner-tags{ display:none; }
+
+  .ad-banner-title{
+    font-size: 1.42em;
+    line-height: 1.14;
+  }
+
+  .ad-banner-desc{
+    grid-area: desc;
+    font-size: 1.00em;
+    line-height: 1.30;
+    margin: 0;
+    min-width: 0;
+  }
+
+  .ad-banner-meta{
+    grid-area: meta;
+    padding-top: 0;
+    border-top: none;
+
+    display: flex;
     flex-direction: column;
+    justify-content: center;
+
+    gap: 2.6cqh;
+    padding: 0.20cqh 0.15cqw;
+
+    min-width: 0;
+    min-height: 0;
+    overflow: clip;
   }
-  .ad-player-banner {
-    padding:
-      clamp(14px, 2.0cqw, 22px)
-      clamp(16px, 2.4cqw, 26px);
+
+  .ad-banner-meta-row{
+    display: flex;
+    gap: 0.45em;
+
+    padding: 2.45cqh 0.72cqw;
+    border-radius: 0.6em;
+    box-shadow: none;
+
+    align-items: flex-start;
+
+    min-width: 0;
+    min-height: 0;
+    overflow: clip;
+  }
+
+  .ad-banner-meta-label{ display:none; }
+
+  .ad-banner-meta-value{
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  #banner-opentime .ad-banner-time-line{
+    white-space: nowrap;
+    overflow-wrap: normal;
+    word-break: keep-all;
+  }
+
+  .ad-banner-qr{
+    grid-area: qr;
+
+    width: 100%;
+    height: 100%;
+
+    padding: 1.0em;
+    border-radius: 0.75em;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 1.30cqh;
+    text-align: center;
+    overflow: clip;
+  }
+
+  .ad-banner-qr-box{
+    width: min(100%, 14cqw);
+    aspect-ratio: 1 / 1;
+
+    padding: 0.50em; /* ✅ 하단 모드에서도 동일하게 여백 확보 */
   }
 }
+
+/* 모바일도 동일 스케일 */
+@media not (pointer: fine){
+  .ad-player-banner{
+    padding: 1.4cqw 1.8cqw;
+  }
+}
+
+/* Safe guard */
+.ad-player-banner,
+.ad-player-banner *{
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 0;
+  max-width: 100%;
+}
+
+.ad-player-banner img,
+.ad-player-banner canvas,
+.ad-player-banner svg{
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* =========================================================
+ * ✅✅✅ 배너 OFF 시: 하단모드(80/20) 무력화 + 비디오 100%
+ * ======================================================= */
+#modal-player.banner-off .ad-player-layout{
+  flex-direction: row !important;
+}
+#modal-player.banner-off .ad-player-left{
+  flex: 1 1 auto !important;
+  height: 100% !important;
+}
+#modal-player.banner-off .ad-player-banner{
+  display: none !important;
+}
+

@@ -1,5 +1,16 @@
+/***************************************************************************************
+ * AD Wright - banner.js (FULL)
+ * 목표:
+ * 1) overflow(잘림) 없게 자동 폰트 조절 (…/스크롤/자르기 금지)
+ * 2) Ctrl+휠 줌에는 window resize로 반응하지 않음 (ResizeObserver 기반)
+ * 3) 하단 모드에서 발생하던 "과한 축소" 방지:
+ *    - overflow 판정 EPS/SAFE 완화
+ *    - 타겟을 '실제 잘림이 의미있는 영역' 중심으로 구성
+ ***************************************************************************************/
+
 const BANNER_CACHE_NAME = 'site-banner-v1';
-const POPUP_URL = 'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?';
+const POPUP_URL =
+  'https://gb9fb258fe17506-dev2.adb.ap-seoul-1.oraclecloudapps.com/ords/r/ad_dev/adwright-user-dev/popup-info?';
 
 // =======================
 // 1) 배너 정보 업데이트
@@ -14,41 +25,28 @@ async function updateBanner(fileId) {
 
   const file = await getBannerFromCache(fileId);
 
-  // 배너 정보 못 찾으면 숨기기
   if (!file) {
     console.log('배너 정보 없음', fileId);
     setBannerVisible(false);
     return;
   }
 
-  // ✅ IS_POPUP 값에 따라 배너 표시 여부 결정
-  //    1 → 배너 표시, 0 → 배너 숨김
-  const flag = String(file.is_popup ?? '0'); // undefined이면 기본 0
-  const showBanner = flag === '1';           // 🔁 여기만 반대로!
-
+  const flag = String(file.is_popup ?? '0');
+  const showBanner = flag === '1';
   setBannerVisible(showBanner);
+  if (!showBanner) return;
 
-  // 숨길 거면 내용 세팅 안 하고 바로 종료
-  if (!showBanner) {
-    return;
-  }
+  if ($title)    $title.textContent    = file.popup_name    || '';
+  if ($subtitle) $subtitle.textContent = file.en_popup_name || '';
 
-  if ($title)     $title.textContent     = file.popup_name     || '';
-  if ($subtitle)  $subtitle.textContent  = file.en_popup_name  || '';
   if ($promotion) {
     let promo = file.promotion || '';
-
-    // 1) CRLF(\r\n)을 LF(\n)로 정규화
     promo = promo.replace(/\r\n/g, '\n');
-
-    // 2) LF(\n) 하나당 <br> 하나
     promo = promo.replace(/\n/g, '<br>');
-
-    // 3) HTML로 넣어서 줄바꿈 반영
     $promotion.innerHTML = promo;
   }
 
-  if ($location)  $location.textContent  = file.popup_location || '';
+  if ($location) $location.textContent = file.popup_location || '';
 
   if ($duration) {
     let durationText = '';
@@ -59,41 +57,37 @@ async function updateBanner(fileId) {
   }
 
   if ($opentime) {
-    // 예: "평일 13:00 ~ 20:00|주말 10:00 ~ 19:00"
     const raw = file.open_tm_range || '';
     const parts = raw
       .split('|')
       .map(s => s.trim())
       .filter(s => s.length > 0);
 
-    // 각 구간을 한 줄(span)로 만들고, 줄 안에서는 줄바꿈 금지
+    // ✅ '|' 기준으로만 라인 생성 (라인 내부 줄바꿈 금지)
     const opentimeHtml = parts
-      .map(line => `<span class="ad-banner-time-line">${line}</span>`)
+      .map(line => `<span class="ad-banner-time-line">${escapeHtml(line)}</span>`)
       .join('');
 
     $opentime.innerHTML = opentimeHtml;
   }
 
-
-  // ✅ category → 태그 렌더링 (이모지 제거)
   if (typeof setBannerTags === 'function') {
     setBannerTags(file.category || '');
   }
 
-  const url = POPUP_URL + "aid=" + file.info_id;
-  setBannerQr(url);
+  const url = POPUP_URL + 'aid=' + file.info_id;
+  if (typeof setBannerQr === 'function') {
+    setBannerQr(url);
+  }
 
-  // ✅ 색 적용 (DB 값 기반)
   if (typeof setBannerTheme === 'function') {
-    const bg   = file.banner_bg_color   || '#7c4dff';  // 메인 배너 색
-    const text = file.banner_text_color || '#ffffff';  // 텍스트 색
+    const bg   = file.banner_bg_color   || '#7c4dff';
+    const text = file.banner_text_color || '#ffffff';
     setBannerTheme(bg, text);
   }
 
-  // 폰트 자동 축소
-  if (typeof fitAdBanner === 'function') {
-    fitAdBanner();
-  }
+  if (typeof scheduleFit === 'function') scheduleFit();
+  else if (typeof fitAdBanner === 'function') fitAdBanner();
 }
 window.updateBanner = updateBanner;
 
@@ -132,8 +126,8 @@ function formatDotDate(dateStr) {
   if (!dateStr) return null;
   const d   = new Date(dateStr);
   const y   = d.getFullYear();
-  const m   = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
+  const m   = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
   return `${y}.${m}.${day}`;
 }
 
@@ -154,15 +148,27 @@ async function cacheBanners(banners) {
 
 /* -------------------------------------------------------
  * 배너 show / hide 제어
- *   - IS_POPUP = 1  → 배너 표시
- *   - IS_POPUP = 0  → 배너 숨김 (동영상만 보이게)
  * ----------------------------------------------------- */
 function setBannerVisible(visible) {
-  const banner = document.getElementById("banner");
+  const banner = document.getElementById('banner');
+  const modal  = document.getElementById('modal-player');
 
-  if (!banner) return;
+  if (banner) banner.style.display = visible ? '' : 'none';
 
-  banner.style.display = visible ? '' : 'none';
+  // ✅ 핵심: 배너 OFF 상태 클래스
+  if (modal) modal.classList.toggle('banner-off', !visible);
+}
+
+/* -------------------------------------------------------
+ * XSS/깨짐 방지용
+ * ----------------------------------------------------- */
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 }
 
 // =======================
@@ -170,28 +176,86 @@ function setBannerVisible(visible) {
 // =======================
 (function () {
 
+  function isBottomMode() {
+    const layout = document.querySelector('.ad-player-layout');
+    if (!layout) return false;
+    return getComputedStyle(layout).flexDirection === 'column';
+  }
+
+  /* =====================================================
+   * ✅ fitAdBanner: "절대 잘림/…/스크롤 없이" 폰트만 줄여서 맞추기
+   * - CSS 계산 폰트(컨테이너 기반)를 상한(max)으로 사용
+   * - 하단 모드 과소 축소 방지: EPS/SAFE 완화
+   * ===================================================== */
   function fitAdBanner() {
     const banner = document.querySelector('.ad-player-banner');
     if (!banner) return;
 
+    // ✅ CSS가 계산한 폰트를 상한으로 쓰기 위해 inline을 비움
     banner.style.fontSize = '';
+    const maxFont = parseFloat(getComputedStyle(banner).fontSize) || 16;
 
-    const maxSteps = 30;
-    let fs   = parseFloat(getComputedStyle(banner).fontSize) || 16;
-    let step = 0;
+    // 사실상 제한 없음(0은 위험 -> 0.1)
+    const minFont = 0.1;
 
-    while (
-      step < maxSteps &&
-      (banner.scrollHeight > banner.clientHeight ||
-       banner.scrollWidth  > banner.clientWidth)
-    ) {
-      fs *= 0.9;
-      banner.style.fontSize = fs + 'px';
-      step++;
+    const bottom = isBottomMode();
+
+    // ✅ 하단 모드: 과민한 오판 줄이기 (미세 서브픽셀을 과하게 “넘침”으로 보지 않게)
+    const EPS  = bottom ? 1.2 : 0.9;   // overflow 판정 허용치
+    const SAFE = bottom ? 0.05 : 0.10; // 마지막 안전 마진
+
+    // ✅ 측정 대상: "진짜로 잘림이 의미있는 래퍼들" 위주로
+    const targets = [
+      banner,
+      banner.querySelector('.ad-banner-inner'),
+      banner.querySelector('.ad-banner-main'),
+      banner.querySelector('.ad-banner-subtitle'),
+      banner.querySelector('.ad-banner-heading'),
+      banner.querySelector('.ad-banner-desc'),
+      banner.querySelector('.ad-banner-meta'),
+      ...banner.querySelectorAll('.ad-banner-meta-row'),
+      banner.querySelector('#banner-opentime'),
+      ...banner.querySelectorAll('#banner-opentime .ad-banner-time-line'),
+      banner.querySelector('.ad-banner-qr'),
+      banner.querySelector('.ad-banner-qr-text'),
+    ].filter(Boolean);
+
+    const isOverflow = (el) => {
+      if (!el || !el.getClientRects().length) return false;
+
+      const sh = el.scrollHeight;
+      const ch = el.clientHeight;
+      const sw = el.scrollWidth;
+      const cw = el.clientWidth;
+
+      return (sh - ch) > EPS || (sw - cw) > EPS;
+    };
+
+    const anyOverflow = () => targets.some(isOverflow);
+
+    // ✅ 이진탐색: "넘치지 않는 최대 폰트"
+    let lo = minFont;
+    let hi = maxFont;
+    let best = minFont;
+
+    for (let i = 0; i < 18; i++) {
+      const mid = (lo + hi) / 2;
+      banner.style.fontSize = mid + 'px';
+
+      if (anyOverflow()) {
+        hi = mid;
+      } else {
+        best = mid;
+        lo = mid;
+      }
     }
+
+    // ✅ 안전마진(미세 1px 잘림 방지) - 하단 모드는 너무 깎지 않게
+    const finalSize = Math.max(minFont, best - SAFE);
+    banner.style.fontSize = finalSize + 'px';
   }
 
-  // QRCode.js로 QR 생성
+  // ✅ QRCode.js로 QR 생성
   function setBannerQr(url) {
     const box = document.getElementById('ad-banner-qr-box');
     if (!box || !url) return;
@@ -214,15 +278,12 @@ function setBannerVisible(visible) {
   }
 
   // ===== 카테고리 → 태그 렌더링 =====
-
-  // "🚗 리빙:💄 뷰티"  →  ["리빙", "뷰티"]
   function parseCategoryTags(categoryStr) {
     if (!categoryStr) return [];
 
     return categoryStr
-      .split(':')               // 콜론 기준 분리
+      .split(':')
       .map(s => s.trim())
-      // 앞쪽 이모지·기호 제거 (처음 한글/영문/숫자 전까지 삭제)
       .map(s => s.replace(/^[^0-9A-Za-z가-힣]+/, ''))
       .filter(s => s.length > 0);
   }
@@ -236,7 +297,6 @@ function setBannerVisible(visible) {
 
     const tags = parseCategoryTags(categoryStr);
 
-    // 카테고리 없으면 감춤
     if (!tags.length) {
       wrap.innerHTML = '';
       wrap.style.display = 'none';
@@ -260,9 +320,7 @@ function setBannerVisible(visible) {
     let h = hex.trim();
 
     if (h[0] === '#') h = h.slice(1);
-    if (h.length === 3) {
-      h = h.split('').map(c => c + c).join('');
-    }
+    if (h.length === 3) h = h.split('').map(c => c + c).join('');
     if (h.length !== 6) return null;
 
     const r = parseInt(h.slice(0, 2), 16);
@@ -280,7 +338,6 @@ function setBannerVisible(visible) {
     return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
   }
 
-  // color1을 base, color2(흰/검정)와 섞기
   function mixRgb(c1, c2, ratio) {
     const t = Math.max(0, Math.min(1, ratio));
     return {
@@ -290,37 +347,52 @@ function setBannerVisible(visible) {
     };
   }
 
-  // ▶ 사용자 지정 색 적용
-  //   bgHex: 메인 색 (#rrggbb)
-  //   textHex: 텍스트 색
   function setBannerTheme(bgHex, textHex) {
     const banner = document.querySelector('.ad-player-banner');
     if (!banner) return;
 
-    // 1) 메인 색 기준으로 그라디언트 색 계산
+    if (bgHex && bgHex[0] !== '#') bgHex = '#' + bgHex;
+    if (textHex && textHex[0] !== '#') textHex = '#' + textHex;
+
     if (bgHex) {
       const base = hexToRgb(bgHex);
       if (base) {
         const white = { r: 255, g: 255, b: 255 };
-        const black = { r: 0, g: 0, b: 0 };
+        const black = { r:   0, g:   0, b:   0 };
 
-        const light = mixRgb(base, white, 0.40); // 40% 정도 흰색 섞기
-        const dark  = mixRgb(base, black, 0.20); // 20% 정도만 검정 섞기
-        const deep  = mixRgb(base, black, 0.32); // dark보다 조금 더 진하게
+        const light = mixRgb(base, white, 0.20);
+        const dark  = mixRgb(base, black, 0.10);
+        const deep  = mixRgb(base, black, 0.18);
 
         banner.style.setProperty('--ad-banner-main',  bgHex);
         banner.style.setProperty('--ad-banner-light', rgbToHex(light.r, light.g, light.b));
         banner.style.setProperty('--ad-banner-dark',  rgbToHex(dark.r,  dark.g,  dark.b));
         banner.style.setProperty('--ad-banner-deep',  rgbToHex(deep.r,  deep.g,  deep.b));
-        // border는 기존 느낌 유지
-        banner.style.setProperty('--ad-banner-border', 'rgba(255, 255, 255, 0.2)');
+        banner.style.setProperty('--ad-border', 'rgba(255,255,255,0.2)');
       }
     }
 
-    // 2) 텍스트 색
-    if (textHex) {
-      banner.style.color = textHex;
-    }
+    if (textHex) banner.style.color = textHex;
+  }
+
+
+  /* =====================================================
+   * ✅ scheduleFit (디바운스)
+   * - 브라우저 줌(Ctrl+휠)은 window resize로도 흔들리므로
+   *   -> window resize 리스너는 두지 않음
+   * - ResizeObserver(모달/배너) + MutationObserver만 사용
+   * ===================================================== */
+  let _fitT = 0;
+  function scheduleFit() {
+    clearTimeout(_fitT);
+
+    _fitT = setTimeout(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          fitAdBanner();
+        });
+      });
+    }, 80);
   }
 
   // 전역 노출
@@ -328,18 +400,28 @@ function setBannerVisible(visible) {
   window.setBannerQr    = setBannerQr;
   window.setBannerTheme = setBannerTheme;
   window.setBannerTags  = setBannerTags;
+  window.scheduleFit    = scheduleFit;
 
-  // 초기 로드 / 리사이즈
-  window.addEventListener('load', function () {
-    fitAdBanner();
-  });
+  // ✅ 초기 로드만
+  window.addEventListener('load', scheduleFit);
 
-  window.addEventListener('resize', fitAdBanner);
-
+  // ✅ modal-player + banner 관찰 (모달 크기 조절에만 반응)
   const mp = document.getElementById('modal-player');
+  const bannerEl = document.querySelector('.ad-player-banner');
+
   if (window.ResizeObserver && mp) {
-    const ro = new ResizeObserver(fitAdBanner);
+    const ro = new ResizeObserver(() => scheduleFit());
     ro.observe(mp);
+  }
+  if (window.ResizeObserver && bannerEl) {
+    const ro2 = new ResizeObserver(() => scheduleFit());
+    ro2.observe(bannerEl);
+  }
+
+  // ✅ 내용 변경(텍스트/QR 생성 등)도 관찰
+  if (window.MutationObserver && bannerEl) {
+    const mo = new MutationObserver(() => scheduleFit());
+    mo.observe(bannerEl, { childList: true, subtree: true, characterData: true });
   }
 
 })();
