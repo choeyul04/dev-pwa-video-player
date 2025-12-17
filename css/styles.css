@@ -172,6 +172,12 @@ nav .sidenav-trigger {
 .input-field label {
   color: var(--secondary);
 }
+
+/* Device ID 라벨-입력칸 간격(입력칸을 아래로) */
+#device-id{
+  margin-top: 12px !important;
+}
+
 /* label focus color */
 .input-field input[type='text']:focus + label {
   color: var(--secondary) !important;
