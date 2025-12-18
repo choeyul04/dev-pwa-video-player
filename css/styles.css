@@ -238,19 +238,6 @@ nav .sidenav-trigger {
 /***************************************************************************************
  * AD Wright - Video Player Right Banner (Popup Info)
  ***************************************************************************************/
-/***************************************************************************************
- * AD Wright - Video Player Right Banner (Popup Info)
- * ✅ 목표
- *  - 같은 비율이면 크기만 줄여도 "그대로 축소된 모습" 유지
- *  - px clamp(최소/최대) 제거
- *  - 스크롤/ellipsis/임의 줄바꿈 금지
- *  - 삐져나옴/미세 1px 잘림 방지
- *  - 하단 모드에서만 발생하던 "과한 축소/빈공간/자잘한 잘림" 해결
- *  - ✅ 오른쪽(기본) 모드에서는 예전처럼 '가운데로 모이게'
- *  - ✅ 배너가 없을 땐 비디오가 100% 차지 (하단모드 80% 금지)
- *  - ✅ QR 흰 박스가 테두리에 붙는 현상 방지(안전 패딩)
- ***************************************************************************************/
-
 /* ✅ modal-player 비율 기준 */
 #modal-player{
   container-type: size;
@@ -319,8 +306,10 @@ nav .sidenav-trigger {
   border-left: var(--ad-bw) solid var(--ad-border);
   font-family: 'Noto Sans KR', sans-serif;
 
+  /* ✅ 전체는 "단어(공백) 기준" 줄바꿈 */
   word-break: keep-all;
   overflow-wrap: normal;
+  line-break: strict;
 
   display: flex;
   align-items: stretch;
@@ -357,16 +346,16 @@ nav .sidenav-trigger {
   justify-content: center;
 
   gap: 1.0em;
-  padding-block: 0.14em;
+
+  /* ✅ 숨통은 pseudo가 아니라 padding으로 (안정) */
+  padding-block: 1.1cqh;
 }
 
-/* 오른쪽 모드 숨통 */
+/* pseudo 숨통 제거 */
 .ad-banner-inner::before,
 .ad-banner-inner::after{
-  content: "";
-  display: block;
-  flex: 0 0 auto;
-  height: 1.1cqh;
+  content: none !important;
+  display: none !important;
 }
 
 /* 메인 카드 */
@@ -752,9 +741,11 @@ nav .sidenav-trigger {
 
   .ad-banner-meta-label{ display:none; }
 
+  /* ✅ 하단모드도 "단어 기준" 유지 */
   .ad-banner-meta-value{
     white-space: normal;
-    overflow-wrap: anywhere;
+    overflow-wrap: normal;
+    word-break: keep-all;
   }
 
   #banner-opentime .ad-banner-time-line{
@@ -828,3 +819,22 @@ nav .sidenav-trigger {
   display: none !important;
 }
 
+
+.ad-banner-title,
+.ad-banner-desc,
+.ad-banner-meta-value,
+.ad-banner-qr-text{
+  white-space: normal !important;
+  overflow-wrap: normal !important;
+  word-break: keep-all !important;
+  line-break: strict;
+
+  overflow: visible !important;
+  text-overflow: unset !important;
+}
+
+.ad-banner-heading,
+.ad-banner-main,
+.ad-banner-meta{
+  overflow: visible !important;
+}
